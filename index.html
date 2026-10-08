@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Számrendszer átváltó</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Számrendszer <span>átváltó</span></h1>
+        <p>kettes · tízes · tizenhatos</p>
+        <div style="margin-top: 15px;">
+            <a href="dokumentacio.html" class="kis-gomb" style="text-decoration: none; display: inline-block;">📚 Dokumentáció megnyitása</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="bal">
+            <section class="kartya">
+                <h2>Átváltó</h2>
+
+                <label for="szam">Szám</label>
+                <input type="text" id="szam" placeholder="pl. 1F, 101, 255" autocomplete="off" spellcheck="false" maxlength="24">
+
+                <div class="ket-oszlop">
+                    <div>
+                        <label for="alap">Milyen számrendszerben van?</label>
+                        <select id="alap">
+                            <option value="0">Döntse el magától</option>
+                            <option value="2">Kettes</option>
+                            <option value="10">Tízes</option>
+                            <option value="16">Tizenhatos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="cel">Melyikbe váltsa át?</label>
+                        <select id="cel">
+                            <option value="2">Kettes</option>
+                            <option value="10">Tízes</option>
+                            <option value="16">Tizenhatos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="gomb">Átváltás</button>
+
+                <p id="eredmeny"></p>
+            </section>
+
+            <section class="kartya">
+                <h2>Karakterek vizsgálata</h2>
+                <div id="tabla"></div>
+            </section>
+        </div>
+
+        <section class="kartya kod-kartya">
+            <div class="kod-fejlec">
+                <span class="pont piros"></span>
+                <span class="pont sarga"></span>
+                <span class="pont zold"></span>
+                <span class="fajlnev">script.js</span>
+                <span class="szamlalo" id="szamlalo">0 / 0 lépés</span>
+            </div>
+            <div class="vezerlo">
+                <button class="kis-gomb" id="lejatszas">⏸ Szünet</button>
+                <button class="kis-gomb" id="lepes">Lépés ›</button>
+                <button class="kis-gomb" id="vegere">Végére »</button>
+                <span class="sebesseg">
+                    Lassú
+                    <input type="range" id="sebesseg" min="1" max="10" value="6">
+                    Gyors
+                </span>
+            </div>
+            <pre id="kod"></pre>
+            <div class="valtozok-doboz">
+                <div class="valtozok-fejlec">Változók <span id="hivas"></span></div>
+                <div id="valtozok"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="megjelenites.js"></script>
+</body>
+</html>
