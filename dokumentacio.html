@@ -101,7 +101,7 @@
     <h3>2.3 A logikai folyamatábra (State/Event ábra)</h3>
     <p>Az alábbi ábra bemutatja az algoritmus klasszikus állapotgép (State Machine) szerű felépítését. Csak a tiszta matematikai logikára fókuszál, bemutatva az eseményeket, elágazásokat és a lehetséges végállapotokat.</p>
     
-    <div class="mermaid" style="background: rgba(23, 26, 36, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #262b3b; margin-top: 20px; overflow-x: auto;">
+    <pre class="mermaid" style="background: rgba(23, 26, 36, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #262b3b; margin-top: 20px; overflow-x: auto; white-space: pre-wrap; font-family: inherit;">
 flowchart TD
     %% Stílusok definiálása (Jelmagyarázat)
     classDef state fill:#1e293b,stroke:#8b6cff,stroke-width:2px,color:#fff;
@@ -154,7 +154,7 @@ flowchart TD
     S_Success_2 -.-> S_Idle
     S_Success_3 -.-> S_Idle
     S_Ambiguous -.-> S_Idle
-    </div>
+    </pre>
 
     <h2>3. A vizuális felület és a lejátszó (<code>megjelenites.js</code>)</h2>
     <p>Hogy a programozás tanulását segítsem, építettem egy egyedi vizualizációs eszközt. Ez a <code>megjelenites.js</code> fájlban található, és jóval haladóbb technikákat alkalmaz.</p>
@@ -197,5 +197,9 @@ flowchart TD
     </div>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
+
+    <footer style="text-align: center; color: #6b7189; margin-top: 60px; border-top: 1px solid #262b3b; padding-top: 20px; padding-bottom: 20px; font-size: 0.85rem;">
+        Számrendszer Átváltó Dokumentáció - <strong>v1.1.0</strong>
+    </footer>
 </body>
 </html>
