@@ -5,71 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Szoftvertesztelés - Tesztesetek és Metrikák</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            background: #0d0f16;
-            padding: 40px 20px;
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #b9bfd3;
-            line-height: 1.6;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1, h2, h3, h4 { color: #e6e8ef; }
-        h1 { font-size: 2.2rem; text-align: center; margin-bottom: 40px; }
-        h1 span {
-            background: linear-gradient(90deg, #8b6cff, #22d3ee);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        h2 { border-bottom: 1px solid #262b3b; padding-bottom: 10px; margin-top: 40px; color: #22d3ee; }
-        h3 { margin-top: 30px; color: #8b6cff; }
-        p, li { font-size: 1.05rem; }
-        a { color: #8b6cff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .vissza { display: inline-block; margin-bottom: 20px; }
-        
-        .teszteset {
-            background: rgba(23, 26, 36, 0.85);
-            border: 1px solid #262b3b;
-            border-left: 4px solid #8b6cff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .teszteset h4 { margin-top: 0; margin-bottom: 10px; color: #fff; }
-        
-        .bug { border-left-color: #f78c6c; }
-        .epic { border-left-color: #22d3ee; }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #262b3b;
-        }
-        th { color: #8b6cff; }
-        
-        .címke {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-        .pass { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .fail { background: rgba(244, 63, 94, 0.2); color: #f43f5e; }
-        .fixed { background: rgba(34, 211, 238, 0.2); color: #22d3ee; }
-    </style>
 </head>
 <body>
-    <a href="index.html" class="kis-gomb vissza" style="text-decoration: none;">← Vissza az alkalmazáshoz</a>
+    <a href="index.html" class="kis-gomb vissza">← Vissza az alkalmazáshoz</a>
     
     <h1>Szoftvertesztelés <span>(Szofteszt)</span> dokumentáció</h1>
     <p style="text-align: center; font-size: 1.1rem; opacity: 0.8;">Epicek, User Story-k, Állapotok (States/Events), Tesztesetek és Defektek (Bugok)</p>
@@ -89,13 +27,13 @@
     <h2>2. Architektúra: Állapotok és Események (State & Event)</h2>
     <p>Az alkalmazás egy klasszikus <strong>State Machine (Állapotgép)</strong> mintát követ az eseményvezérelt (Event-driven) JavaScript futtatókörnyezetben.</p>
     
-    <pre class="mermaid" style="background: rgba(23, 26, 36, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #262b3b; margin-top: 20px; margin-bottom: 20px; overflow-x: auto; white-space: pre-wrap; font-family: inherit;">
+    <pre class="mermaid">
 flowchart TD
     %% Stílusok definiálása (Jelmagyarázat)
-    classDef state fill:#1e293b,stroke:#8b6cff,stroke-width:2px,color:#fff;
-    classDef event fill:#0f172a,stroke:#f59e0b,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
-    classDef action fill:#0f172a,stroke:#22d3ee,stroke-width:2px,color:#fff;
-    classDef decision fill:#334155,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef state fill:#001100,stroke:#33ff00,stroke-width:2px,color:#33ff00;
+    classDef event fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+    classDef action fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff;
+    classDef decision fill:#002200,stroke:#33ff00,stroke-width:2px,color:#33ff00;
 
     %% --- ESEMÉNYEK ÉS INDULÁS ---
     S_Idle((IDLE ÁLLAPOT<br>Várakozás felhasználóra)):::state
@@ -272,7 +210,7 @@ flowchart TD
         <p><strong>Megoldás (Fix):</strong> A befogadó elemet <code>&lt;pre&gt;</code> HTML elemre cseréltük, ami nyers szövegként adja át a kódot a Mermaid.js rajzolómotornak.</p>
     </div>
 
-    <div class="forrasok" style="background: rgba(23, 26, 36, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #262b3b; margin-top: 40px;">
+    <div class="forrasok">
         <h3>Felhasznált források (QA és Tesztelés)</h3>
         <ul>
             <li><a href="https://www.atlassian.com/agile/project-management/epics-stories-themes" target="_blank">Agilis keretrendszer: Epicek és User Story-k (Atlassian Agile Coach)</a></li>
@@ -286,8 +224,9 @@ flowchart TD
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
 
-    <footer style="text-align: center; color: #6b7189; margin-top: 60px; border-top: 1px solid #262b3b; padding-top: 20px; padding-bottom: 20px; font-size: 0.85rem;">
-        Számrendszer Átváltó - Szoftvertesztelés (Szofteszt) Dokumentáció - <strong>v1.1.0</strong>
+    <footer>
+        Számrendszer Átváltó - Szoftvertesztelés (Szofteszt) Dokumentáció - <strong>v1.1.0</strong><br>
+        <span style="opacity: 0.7;">(Dizájn megjegyzés: A 3D Retro CRT vizuális megjelenés külső CSS template alapján lett implementálva.)</span>
     </footer>
 </body>
 </html>

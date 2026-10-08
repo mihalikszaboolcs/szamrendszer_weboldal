@@ -5,73 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fejlesztési Dokumentáció</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            background: #0d0f16;
-            padding: 40px 20px;
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #b9bfd3;
-            line-height: 1.6;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1, h2, h3 {
-            color: #e6e8ef;
-        }
-        h1 {
-            font-size: 2.2rem;
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        h1 span {
-            background: linear-gradient(90deg, #8b6cff, #22d3ee);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        h2 {
-            border-bottom: 1px solid #262b3b;
-            padding-bottom: 10px;
-            margin-top: 40px;
-            color: #22d3ee;
-        }
-        h3 {
-            margin-top: 30px;
-            color: #8b6cff;
-        }
-        p, li {
-            font-size: 1.05rem;
-        }
-        a {
-            color: #8b6cff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .vissza {
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        code {
-            background: #12151e;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: "SF Mono", Menlo, Consolas, monospace;
-            color: #f78c6c;
-            border: 1px solid #262b3b;
-        }
-        .forrasok {
-            background: rgba(23, 26, 36, 0.85);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #262b3b;
-            margin-top: 40px;
-        }
-    </style>
 </head>
 <body>
-    <a href="index.html" class="kis-gomb vissza" style="text-decoration: none;">← Vissza az alkalmazáshoz</a>
+    <a href="index.html" class="kis-gomb vissza">← Vissza az alkalmazáshoz</a>
     
     <h1>Számrendszer <span>átváltó</span> dokumentáció</h1>
 
@@ -101,13 +37,13 @@
     <h3>2.3 A logikai folyamatábra (State/Event ábra)</h3>
     <p>Az alábbi ábra bemutatja az algoritmus klasszikus állapotgép (State Machine) szerű felépítését. Csak a tiszta matematikai logikára fókuszál, bemutatva az eseményeket, elágazásokat és a lehetséges végállapotokat.</p>
     
-    <pre class="mermaid" style="background: rgba(23, 26, 36, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #262b3b; margin-top: 20px; overflow-x: auto; white-space: pre-wrap; font-family: inherit;">
+    <pre class="mermaid">
 flowchart TD
     %% Stílusok definiálása (Jelmagyarázat)
-    classDef state fill:#1e293b,stroke:#8b6cff,stroke-width:2px,color:#fff;
-    classDef event fill:#0f172a,stroke:#f59e0b,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
-    classDef action fill:#0f172a,stroke:#22d3ee,stroke-width:2px,color:#fff;
-    classDef decision fill:#334155,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef state fill:#001100,stroke:#33ff00,stroke-width:2px,color:#33ff00;
+    classDef event fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+    classDef action fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff;
+    classDef decision fill:#002200,stroke:#33ff00,stroke-width:2px,color:#33ff00;
 
     %% --- ESEMÉNYEK ÉS INDULÁS ---
     S_Idle((IDLE ÁLLAPOT<br>Várakozás felhasználóra)):::state
@@ -173,11 +109,10 @@ flowchart TD
     </ol>
 
     <h2>4. Dizájn és megjelenés (<code>style.css</code>)</h2>
-    <p>A weboldal dizájnja egy modern kódszerkesztőre (mint például a VS Code) hajaz, sötét témával. CSS Grid-et és Flexbox-ot használtam az elrendezéshez.</p>
+    <p>A weboldal dizájnja egy klasszikus, 90-es évekbeli CRT monokróm terminálra hajaz. A stílus külső template és referencia alapján készült el.</p>
     <ul>
-        <li>A kód színezéséhez saját, egyszerű reguláris kifejezés alapú színezőt írtam a <code>szinez()</code> függvényben, ami span-okba csomagolja a kulcsszavakat, számokat és stringeket, a CSS pedig Material Theme jellegű színeket ad nekik.</li>
-        <li>A bal alsó sarokban a kis kockák CSS animációkat használnak (<code>transition</code> és <code>transform</code>), hogy finoman felugorjanak, amikor a program vizsgálja őket.</li>
-        <li>A <code>@media (max-width: 900px)</code> szabály (Media Query) gondoskodik róla, hogy telefonon vagy kisebb monitoron az oldalsó kód-panel a bal oldali tartalom alá csússzon.</li>
+        <li>A kód színezéséhez saját, egyszerű reguláris kifejezés alapú színezőt írtam a <code>szinez()</code> függvényben, ami span-okba csomagolja a kulcsszavakat, számokat és stringeket, a CSS pedig zöldes terminál színeket ad nekik.</li>
+        <li>A foszforos ragyogást (Glow), a CRT görbületet és a villódzást tiszta CSS3 effektekkel (box-shadow, text-shadow, keyframes) értük el.</li>
     </ul>
 
     <div class="forrasok">
@@ -194,11 +129,13 @@ flowchart TD
             <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString" target="_blank">Függvények memóriából történő kiolvasása - <code>Function.toString()</code> (MDN Web Docs)</a></li>
         </ul>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
 
-    <footer style="text-align: center; color: #6b7189; margin-top: 60px; border-top: 1px solid #262b3b; padding-top: 20px; padding-bottom: 20px; font-size: 0.85rem;">
-        Számrendszer Átváltó Dokumentáció - <strong>v1.1.0</strong>
+    <footer>
+        Számrendszer Átváltó Dokumentáció - <strong>v1.1.0</strong><br>
+        <span style="opacity: 0.7;">(Dizájn megjegyzés: A 3D Retro CRT vizuális megjelenés külső CSS template alapján lett implementálva.)</span>
     </footer>
 </body>
 </html>

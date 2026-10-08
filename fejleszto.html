@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fejlesztői és Verziókezelési Kézikönyv</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="index.html" class="kis-gomb vissza">← Vissza az alkalmazáshoz</a>
+    
+    <h1>Fejlesztői és Verziókezelési <span>(DevOps)</span> Kézikönyv</h1>
+
+    <h2>1. Verziókezelési Stratégia (Git Workflow)</h2>
+    <p>A projekt verziókezelése Git alapokon, a <strong>GitHub</strong> platformon történik. Mivel az alkalmazáson jelenleg egyetlen fejlesztő dolgozik, egy egyszerűsített, Trunk-based fejlesztési modellt alkalmazunk.</p>
+    <ul>
+        <li><strong>Fő ág (Branch):</strong> Kizárólag a <code>main</code> ágon történik az integráció.</li>
+        <li><strong>Eszközök:</strong> Lokálisan a macOS környezeten futó <em>GitHub Desktop</em> kliens biztosítja a grafikus felületű, hiba-mentes commitolást.</li>
+        <li><strong>Commit Konvenciók:</strong> A commit üzenetek magyar nyelvűek, rövidek és leíró jellegűek, amelyek az elvégzett konkrét javításra vagy új funkcióra fókuszálnak (pl. <em>"Verziószám hozzáadása a lábléchez"</em>).</li>
+    </ul>
+
+    <h2>2. CI/CD Pipeline (Folyamatos Integráció és Szállítás)</h2>
+    <p>A kód élesítése (Deployment) 100%-ban automatizált a <strong>GitHub Actions</strong> segítségével. Nincs szükség manuális ZIP fájlok feltöltögetésére.</p>
+    
+    <div class="kiemelt-doboz">
+        <h4>Hogyan működik a folyamat?</h4>
+        <p>A <code>.github/workflows/deploy.yml</code> fájlban definiált robot figyel minden új kódfeltöltést (Push) a <code>main</code> ágon. Ha érzékel egy frissítést, elindít egy Ubuntu Linux futtatókörnyezetet a felhőben, letölti a legfrissebb kódot, majd a GitHub Titkok (Secrets) közé mentett, titkosított hitelesítő adatokkal bejelentkezik a Magyar Hosting (Wepanel) szerverünkre FTP protokollon keresztül, és felülírja a fájlokat.</p>
+    </div>
+
+    <pre class="mermaid">
+flowchart LR
+    %% Stílusok
+    classDef lokalis fill:#001100,stroke:#33ff00,stroke-width:2px,color:#33ff00;
+    classDef felho fill:#002200,stroke:#33ff00,stroke-width:2px,color:#fff;
+    classDef szerver fill:#000000,stroke:#33ff00,stroke-width:2px,color:#33ff00,stroke-dasharray: 5 5;
+
+    A(Fejlesztői Gép<br/>GitHub Desktop):::lokalis -->|1. git push| B{GitHub<br/>Repository}:::felho
+    B -->|2. Trigger| C[GitHub Actions<br/>Runner]:::felho
+    C -->|3. FTP Deploy| D((Éles Szerver<br/>wawe.hu<br/>public_html)):::szerver
+    </pre>
+
+    <h2>3. Kódolási Szabványok (Coding Conventions)</h2>
+    <p>A kód tervezésekor elsődleges szempont volt, hogy az algoritmus olvasható, oktatási célokra felhasználható és első féléves egyetemi anyaggal kompatibilis legyen.</p>
+    <ul>
+        <li><strong>Nyelvezet:</strong> A változók és függvények nevei magyar nyelvűek (pl. <code>szam</code>, <code>alap</code>, <code>jo()</code>). Ennek oka, hogy a beépített kódelemző lejátszóban a magyar diákok számára sokkal átláthatóbb és érthetőbb a működés logikája.</li>
+        <li><strong>Szerkezet:</strong> Modern ES6+ funkciók (arrow functions, const/let) szándékos kerülése az alap magban (<code>script.js</code>). Klasszikus <code>var</code> és <code>for</code> ciklusok használata a maximális kompatibilitás és az algoritmikus gondolkodás bemutatása érdekében.</li>
+        <li><strong>Függőségek (Dependencies):</strong> A projekt "Vanilla" (tiszta) HTML, CSS és JavaScript, semmilyen külső keretrendszert (pl. React, Angular) nem tartalmaz, minimalizálva az erőforrásigényt.</li>
+    </ul>
+
+    <h2>4. Fejlesztői Környezet (Local Setup)</h2>
+    <p>A projekt lokális fejlesztése rendkívül egyszerű, nem igényel komplex szerver-infrastruktúrát.</p>
+    <ul>
+        <li><strong>Előfeltételek:</strong> Egy modern kódszerkesztő (pl. Visual Studio Code) és egy böngésző (Safari, Chrome).</li>
+        <li><strong>Futtatás:</strong> A fejlesztés során elég a helyi gépen (macOS) megnyitni az <code>index.html</code> fájlt a böngészőben. Nincs szükség Node.js futtatókörnyezet telepítésére vagy localhost szerver indítására.</li>
+    </ul>
+
+    <h2>5. Jövőbeli Fejlesztési Tervek (Product Roadmap)</h2>
+    <p>A szoftver fejlesztése iteratív módon folytatódik. A jelenlegi Backlog-ban az alábbi funkciók várnak kidolgozásra:</p>
+    
+    <div class="roadmap-item">
+        <span class="status-badge status-todo">TODO</span>
+        <span><strong>Tetszőleges számrendszer támogatása:</strong> Az algoritmus kibővítése 2-től 36-os számrendszerig terjedő alapok felismerésére és konverziójára.</span>
+    </div>
+    <div class="roadmap-item">
+        <span class="status-badge status-todo">TODO</span>
+        <span><strong>Sötét / Világos mód:</strong> Felhasználó által kapcsolható vizuális téma, CSS változók (custom properties) bevezetésével.</span>
+    </div>
+    <div class="roadmap-item">
+        <span class="status-badge status-progress">PLANNED</span>
+        <span><strong>Lépésszámláló optimalizálás:</strong> A vizualizációs motor memóriahasználatának javítása extrém hosszú kód-lejátszások esetén.</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
+
+    <footer>
+        Számrendszer Átváltó - Fejlesztői (DevOps) Dokumentáció - <strong>v1.1.0</strong><br>
+        <span style="opacity: 0.7;">(Dizájn megjegyzés: A 3D Retro CRT vizuális megjelenés külső CSS template alapján lett implementálva.)</span>
+    </footer>
+</body>
+</html>
