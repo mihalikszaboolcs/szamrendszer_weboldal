@@ -1,251 +1,193 @@
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
-/* =========================================================
-   UI DESIGN MEGJEGYZÉS:
-   Fizikailag Pontos 3D CRT Monitor Szimuláció
-   - Fosfor ragyogás (Phosphor Glow)
-   - Kromatikus aberráció (Lencse torzítás)
-   - Üveg tükröződés (Glass Glare)
-   - Katódsugár frissítés és Scanlines
-========================================================= */
-
-:root {
-    --crt-bg: #030803;
-    --crt-core: #d4ffd4; /* Nagyon világos belső mag az olvashatóságért */
-    --crt-phosphor: #22ff22; /* Zöld ragyogás */
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100vh;
-    background-color: var(--crt-bg);
-    /* Megakadályozzuk a túlzott görgetést a fix overlay-ek miatt */
-    overflow-x: hidden;
-}
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600&display=swap');
 
 body {
-    font-family: 'VT323', monospace;
-    font-size: 1.5rem; /* Megnövelt méret az olvashatóságért */
-    color: var(--crt-core);
-    padding: 50px 40px;
-    box-sizing: border-box;
-    position: relative;
-    
-    /* KROMATIKUS ABERRÁCIÓ ÉS FOSZFOR GLOW
-       A piros és kék eltolás szimulálja az üveg lencse fénytörését. */
-    text-shadow: 
-        1.5px 0 1px rgba(255, 0, 0, 0.7), 
-        -1.5px 0 1px rgba(0, 50, 255, 0.7), 
-        0 0 4px var(--crt-phosphor), 
-        0 0 12px var(--crt-phosphor);
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 40px 20px;
+    line-height: 1.6;
 }
-
-/* =========================================================
-   FIZIKAI 3D RÉTEGEK (ÜVEG ÉS KÉPERNYŐ GÖRBÜLET)
-========================================================= */
-
-/* 1. Képernyő Görbület, Sötétedő perem (Vignette) és Káva árnyék */
-html::before {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9998;
-    pointer-events: none;
-    /* Erős belső árnyék, ami a képernyő szélein lévő vastag üveget szimulálja */
-    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.95), inset 0 0 40px rgba(0,0,0,1);
-    background: radial-gradient(circle at center, transparent 50%, rgba(0, 5, 0, 0.4) 100%);
-}
-
-/* 2. Domború Üveg Tükröződés (Ambient Glare) */
-html::after {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: -20%; left: -20%; right: -20%; bottom: -20%;
-    z-index: 9999;
-    pointer-events: none;
-    /* Egy hatalmas, ívelt, nagyon halvány fehér folt, mintha a szoba fénye tükröződne az ívelt üvegen */
-    background: radial-gradient(ellipse at 35% 25%, rgba(255, 255, 255, 0.06) 0%, transparent 35%);
-    border-radius: 50% / 10%;
-}
-
-/* 3. Pixel Rács (Scanlines) - Finomított, hogy a szöveg olvasható maradjon */
-body::before {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9996;
-    pointer-events: none;
-    /* Sötét vízszintes csíkok és halvány RGB függőleges foszfor rács */
-    background: 
-        linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
-    background-size: 100% 4px, 3px 100%;
-}
-
-/* 4. Katódsugár Frissítés (Refresh Bar) és Villódzás (Flicker) */
-body::after {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9997;
-    pointer-events: none;
-    background: linear-gradient(0deg, transparent 0%, rgba(51, 255, 51, 0.12) 10%, transparent 20%);
-    background-size: 100% 100vh;
-    animation: 
-        scan-roll 7s linear infinite,
-        crt-flicker 0.15s infinite;
-}
-
-@keyframes scan-roll {
-    0% { background-position: 0 -100vh; }
-    100% { background-position: 0 100vh; }
-}
-
-@keyframes crt-flicker {
-    0% { opacity: 0.95; }
-    50% { opacity: 1; }
-    100% { opacity: 0.95; }
-}
-
-/* =========================================================
-   UI ELEMEK (GOMBOK, INPUTOK)
-========================================================= */
 
 h1, h2, h3, h4 {
-    color: #fff;
-    text-transform: uppercase;
-    border-bottom: 3px solid var(--crt-phosphor);
-    padding-bottom: 5px;
-    letter-spacing: 2px;
-    text-shadow: 
-        2px 0 1px rgba(255,0,0,0.8), 
-        -2px 0 1px rgba(0,0,255,0.8), 
-        0 0 10px var(--crt-phosphor), 
-        0 0 20px var(--crt-phosphor);
+    color: #ffffff;
+    font-weight: 600;
 }
 
-h1 { font-size: 3rem; text-align: center; }
-h2 { font-size: 2rem; margin-top: 40px; }
+h1 {
+    text-align: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
 
-a, a:visited {
-    color: #aaffaa;
+h1 span {
+    color: #64ffda;
+}
+
+a {
+    color: #64ffda;
     text-decoration: none;
-    border-bottom: 1px dashed var(--crt-phosphor);
 }
 
 a:hover {
-    background-color: var(--crt-phosphor);
-    color: #000;
-    text-shadow: none;
+    text-decoration: underline;
 }
 
-input, select, button, a.kis-gomb {
-    background: rgba(0, 15, 0, 0.8);
-    color: var(--crt-core);
-    border: 2px solid var(--crt-phosphor);
-    font-family: 'VT323', monospace;
-    font-size: 1.4rem;
+.kartya, .teszteset, .kiemelt-doboz, .forrasok, .roadmap-item {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 4px;
+}
+
+input, select, button, .kis-gomb {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border: 1px solid #444;
     padding: 10px 15px;
-    text-shadow: 0 0 4px var(--crt-phosphor);
-    box-shadow: 0 0 15px rgba(34, 255, 34, 0.2), inset 0 0 10px rgba(34, 255, 34, 0.1);
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 4px;
     outline: none;
-    margin: 5px 0;
-    border-radius: 0;
-    text-transform: uppercase;
 }
 
 input:focus, select:focus {
-    background: rgba(0, 30, 0, 0.9);
-    box-shadow: 0 0 25px rgba(34, 255, 34, 0.5), inset 0 0 15px rgba(34, 255, 34, 0.3);
+    border-color: #64ffda;
 }
 
-button:hover, .kis-gomb:hover, a.kis-gomb:hover {
-    background: var(--crt-phosphor);
-    color: #000;
-    text-shadow: none;
+button, .kis-gomb {
     cursor: pointer;
-    box-shadow: 0 0 30px var(--crt-phosphor);
-}
-
-a.kis-gomb {
+    background-color: #333;
     display: inline-block;
-    padding: 8px 18px;
-    margin: 10px 5px;
 }
 
-/* =========================================================
-   DOBOZOK ÉS TÁBLÁZATOK
-========================================================= */
-
-.kartya, .teszteset, .kiemelt-doboz, .forrasok, .roadmap-item {
-    border: 2px solid var(--crt-phosphor);
-    padding: 20px;
-    margin-bottom: 30px;
-    background: rgba(0, 20, 0, 0.4);
-    box-shadow: 
-        inset 0 0 30px rgba(34, 255, 34, 0.15), 
-        0 0 20px rgba(34, 255, 34, 0.1);
+button:hover, .kis-gomb:hover {
+    background-color: #444;
 }
 
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 12px; text-align: left; border: 1px solid var(--crt-phosphor); }
-th { background: rgba(34, 255, 34, 0.2); text-transform: uppercase; letter-spacing: 1px; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
 
-/* Vizsgálat cellák (Zöld/Piros) */
-.vizsgalat { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; border-bottom: 1px dashed var(--crt-phosphor); padding-bottom: 10px; }
-.cella { border: 2px solid var(--crt-phosphor); padding: 5px 12px; width: 25px; text-align: center; font-size: 1.8rem; position: relative; display: inline-block; margin-right: 4px; background: #000;}
-.cella.most { background: var(--crt-phosphor); color: #000; text-shadow: none; box-shadow: 0 0 20px var(--crt-phosphor); transform: scale(1.05); }
-.jelveny { border: 1px dashed var(--crt-phosphor); padding: 4px 12px; font-size: 1.2rem; flex-shrink: 0; margin-left: auto; text-transform: uppercase; }
-.jelveny.ok { background: rgba(34, 255, 34, 0.2); border: 2px solid var(--crt-phosphor); }
-.jelveny.rossz { background: rgba(255, 0, 0, 0.3); color: #ff5555; border: 2px solid #ff5555; text-shadow: 0 0 8px #ff5555; }
-.cella.ok { color: var(--crt-phosphor); }
-.cella.rossz { color: #ff5555; border-color: #ff5555; text-shadow: 0 0 8px #ff5555; }
+th, td {
+    border: 1px solid #333;
+    padding: 10px;
+    text-align: left;
+}
 
-/* =========================================================
-   KÓDSZINEZŐ
-========================================================= */
+th {
+    background-color: #2d2d2d;
+}
+
+.vizsgalat {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.cella {
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #555;
+    background-color: #1e1e1e;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+}
+
+.cella.most {
+    background-color: #64ffda;
+    color: #000;
+    border-color: #64ffda;
+}
+
+.cella.ok { color: #64ffda; border-color: #64ffda; }
+.cella.rossz { color: #ff5252; border-color: #ff5252; }
+
+.jelveny {
+    margin-left: auto;
+    padding: 4px 8px;
+    border: 1px solid #555;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    border-radius: 4px;
+}
+
+.jelveny.ok { border-color: #64ffda; color: #64ffda; }
+.jelveny.rossz { border-color: #ff5252; color: #ff5252; }
 
 pre, code {
-    background: rgba(0, 10, 0, 0.9);
-    border: 2px solid var(--crt-phosphor);
+    background-color: #000000;
+    border: 1px solid #333;
     padding: 10px;
-    color: var(--crt-core);
-    font-family: 'VT323', monospace;
-    font-size: 1.4rem;
-    box-shadow: inset 0 0 20px rgba(34,255,34,0.1);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    border-radius: 4px;
 }
-#kod { overflow-y: auto; max-height: 500px; padding: 15px; }
 
-.kodsor { display: flex; gap: 15px; }
-.sorszam { opacity: 0.5; width: 35px; text-align: right; user-select: none; border-right: 2px solid var(--crt-phosphor); padding-right: 10px; }
-.kodsor.aktiv { background: rgba(34, 255, 34, 0.3); }
-.kodsor.volt { border-left: 3px solid var(--crt-phosphor); }
+#kod { overflow-y: auto; max-height: 400px; padding: 10px; }
 
-.str { color: #fff; text-shadow: 0 0 5px #fff; }
-.kw { color: var(--crt-phosphor); text-decoration: underline; }
-.num { color: #fff; text-shadow: 0 0 5px #fff; }
-.fn { color: var(--crt-phosphor); font-weight: bold; }
+.kodsor { display: flex; gap: 10px; padding: 2px 0; }
+.sorszam { width: 30px; text-align: right; color: #666; user-select: none; border-right: 1px solid #333; padding-right: 10px; }
+.kodsor.aktiv { background-color: #333; }
+.kodsor.volt { border-left: 2px solid #64ffda; }
 
-.valtozok-doboz { margin-top: 25px; border-top: 2px dashed var(--crt-phosphor); padding-top: 15px; }
-.valtozo { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 4px 8px; border: 2px solid var(--crt-phosphor); background: rgba(0,20,0,0.8); }
-.valtozott { background: var(--crt-phosphor); color: #000; text-shadow: none; box-shadow: 0 0 15px var(--crt-phosphor); }
-.vezerlo { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.str { color: #a5d6ff; }
+.kw { color: #ff7b72; }
+.num { color: #79c0ff; }
+.fn { color: #d2a8ff; }
 
-/* =========================================================
-   ELRENDEZÉS
-========================================================= */
-main { display: flex; gap: 30px; flex-wrap: wrap; position: relative; z-index: 10; }
-.bal { flex: 1; min-width: 320px; }
-.kod-kartya { flex: 1; min-width: 350px; }
-.ket-oszlop { display: flex; gap: 20px; }
+.valtozok-doboz { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
+.valtozo { display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 5px 10px; background-color: #000; border: 1px solid #333; border-radius: 4px; font-family: 'Roboto Mono', monospace; }
+.valtozott { background-color: #64ffda; color: #000; }
+
+.status-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+.status-todo { background-color: #444; color: #ccc; }
+.status-progress { background-color: #665c00; color: #ffd700; }
+.címke { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-right: 10px; }
+.pass { background-color: #004d00; color: #00ff00; }
+.fail { background-color: #4d0000; color: #ff0000; }
+.fixed { background-color: #003366; color: #66b3ff; }
+
+.vezerlo { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+
+main { display: flex; gap: 20px; flex-wrap: wrap; }
+.bal { flex: 1; min-width: 300px; }
+.kod-kartya { flex: 1; min-width: 300px; }
+.ket-oszlop { display: flex; gap: 15px; }
 .ket-oszlop > div { flex: 1; }
-.kod-fejlec { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed var(--crt-phosphor); padding-bottom: 10px; }
-.szamlalo { margin-left: auto; }
+.kod-fejlec { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.szamlalo { margin-left: auto; color: #888; font-size: 0.9rem; }
 
-footer { text-align: center; margin-top: 60px; padding: 30px; border-top: 2px dashed var(--crt-phosphor); opacity: 0.8; position: relative; z-index: 10; font-size: 1.1rem; }
+footer { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #333; color: #888; font-size: 0.9rem; }
+
+.doksi { max-width: 1000px; margin: 0 auto; }
+.doksi p, .doksi li { color: #d0d0d0; }
+.doksi h2 { border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 50px; }
+.doksi h3 { margin-top: 30px; color: #64ffda; }
+.doksi table { font-size: 0.95rem; }
+.doksi td code, .doksi li code, .doksi p code { padding: 1px 5px; }
+
+.vissza { margin-bottom: 20px; }
+
+.tartalom { background-color: #1e1e1e; border: 1px solid #333; border-radius: 4px; padding: 15px 25px; margin-bottom: 30px; }
+.tartalom ol { margin: 0; padding-left: 20px; }
+
+pre.mermaid { background-color: #1e1e1e; text-align: center; padding: 20px; overflow-x: auto; }
+
+.megjegyzes { border-left: 3px solid #64ffda; background-color: #1a1a1a; padding: 10px 15px; margin: 15px 0; }
+.forras-ref { font-size: 0.8rem; color: #888; }
+
+.cellak { display: flex; flex-wrap: wrap; gap: 4px; }
+.cimke { min-width: 110px; }
+.ures { color: #888; }
+#eredmeny { margin-top: 15px; }

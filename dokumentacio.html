@@ -3,139 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fejlesztési Dokumentáció</title>
+    <title>Dokumentáció - Számrendszer átváltó</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="doksi">
     <a href="index.html" class="kis-gomb vissza">← Vissza az alkalmazáshoz</a>
-    
+
     <h1>Számrendszer <span>átváltó</span> dokumentáció</h1>
 
-    <h2>1. A probléma és a megközelítés</h2>
-    <p>A feladat egy olyan weboldal készítése volt, ami bekér egy számot, és magától eldönti, hogy az milyen számrendszerben van (kettes, tízes vagy tizenhatos). Ezt követően a felhasználó kiválaszthatja, mibe szeretné átváltani.</p>
-    <p>A fő nehézséget az jelenti, hogy egy szám kétértelmű lehet. Például a <code>101</code> érvényes kettes (értéke 5), tízes (értéke 101) és tizenhatos (értéke 257) számrendszerben is. A programunk ezt úgy hidalja át, hogy <b>minden lehetséges értelmezést megvizsgál</b>, és ha több számrendszerben is érvényes a bemenet, mindegyik eredményt megmutatja. Ezen felül lehetőséget adunk a felhasználónak, hogy egy legördülő menüből kézzel válassza ki a bemenet számrendszerét, ezzel feloldva a kétértelműséget.</p>
-    
-    <h2>2. A logikai mag (<code>script.js</code>)</h2>
-    <p>A <code>script.js</code> tartalmazza az alkalmazás "agyát". Direkt nagyon primitív, könnyen érthető módon írtam meg, ahogy az első félévben elvárják: <code>var</code> kulcsszavakkal, klasszikus <code>for</code> ciklusokkal, kommentek és trükkös modern JavaScript (ES6+) funkciók nélkül.</p>
-    
-    <h3>2.1 Karakterek érvényességének vizsgálata</h3>
-    <p>A <code>jo(szam, alap)</code> függvény egy egyszerű <code>for</code> ciklussal végigmegy a bevitt szöveg minden karakterén. Feltételek (<code>if</code>) segítségével ellenőrzi, hogy:</p>
-    <ul>
-        <li>Kettes számrendszer (alap=2) esetén csak <code>0</code> és <code>1</code> szerepelhet-e.</li>
-        <li>Tízes számrendszer (alap=10) esetén csak számjegyek (<code>0-9</code>) szerepelhetnek-e.</li>
-        <li>Tizenhatos számrendszer (alap=16) esetén számjegyek és betűk (<code>A-F</code>) is megengedettek.</li>
-    </ul>
+    <div class="tartalom">
+        <strong>Tartalom</strong>
+        <ol>
+            <li><a href="#attekintes">Áttekintés és fájlszerkezet</a></li>
+            <li><a href="#hasznalat">Felhasználói útmutató</a></li>
+            <li><a href="#elmelet">Elméleti háttér: helyiértékes számrendszerek</a></li>
+            <li><a href="#logika">A logikai mag (script.js)</a></li>
+            <li><a href="#vizualizacio">A lépésenkénti vizualizáció (megjelenites.js)</a></li>
+            <li><a href="#dizajn">Megjelenés (style.css)</a></li>
+            <li><a href="#korlatok">Ismert korlátok és továbbfejlesztési lehetőségek</a></li>
+            <li><a href="#forrasok">Források</a></li>
+        </ol>
+    </div>
 
-    <h3>2.2 Az átváltás</h3>
-    <p>A tényleges matematikai átváltást a <code>valt(szam, alap, cel)</code> függvény végzi. Két beépített JavaScript függvényt használ:</p>
-    <ul>
-        <li><code>parseInt(szoveg, alap)</code>: Ez a függvény a szöveget egy adott számrendszerből tízes számrendszerű, "valódi" számmá alakítja.</li>
-        <li><code>Number.toString(cel)</code>: A tízes számrendszerű számot a kívánt cél-számrendszer szöveges formátumává alakítja vissza.</li>
-    </ul>
-    <p><b>Védelem a pontatlanság ellen:</b> Mivel a JavaScript a számokat "lebegőpontos" (Double-precision floating-point) formátumban tárolja, egy nagyon nagy számnál (kb. 15-16 számjegynél hosszabb) elveszítheti a pontosságát. Hogy ne adjunk hibás eredményt, beépítettem egy ellenőrzést: ha az érték nagyobb, mint a <code>Number.MAX_SAFE_INTEGER</code>, a program kiírja, hogy "túl nagy szám".</p>
+    <h2 id="attekintes">1. Áttekintés és fájlszerkezet</h2>
+    <p>Az alkalmazás egy böngészőben futó számrendszer-átváltó, amely egy beírt számról megállapítja, hogy kettes, tízes vagy tizenhatos számrendszerben értelmezhető-e, majd átváltja a kiválasztott cél-számrendszerbe. Az átváltás mellett az oldal lépésről lépésre megmutatja, hogyan fut le a háttérben a JavaScript kód: melyik sor fut éppen, milyen értéket vesznek fel a változók, és hogyan vizsgálja a program a szám karaktereit.</p>
+    <p>A projekt keretrendszer és külső könyvtár nélkül, tiszta HTML, CSS és JavaScript felhasználásával készült. Az egyetlen külső függőség a dokumentációs oldalak ábráit rajzoló Mermaid könyvtár, amely csak a dokumentációban szerepel, magát az alkalmazást nem érinti.</p>
 
-    <h3>2.3 A logikai folyamatábra (State/Event ábra)</h3>
-    <p>Az alábbi ábra bemutatja az algoritmus klasszikus állapotgép (State Machine) szerű felépítését. Csak a tiszta matematikai logikára fókuszál, bemutatva az eseményeket, elágazásokat és a lehetséges végállapotokat.</p>
-    
-    <pre class="mermaid">
-flowchart TD
-    %% Stílusok definiálása (Jelmagyarázat)
-    classDef state fill:#001100,stroke:#33ff00,stroke-width:2px,color:#33ff00;
-    classDef event fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
-    classDef action fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff;
-    classDef decision fill:#002200,stroke:#33ff00,stroke-width:2px,color:#33ff00;
+    <table>
+        <tr><th>Fájl</th><th>Szerepe</th></tr>
+        <tr><td><code>index.html</code></td><td>Az alkalmazás felülete: beviteli mező, legördülő menük, eredmény, karaktervizsgáló tábla, kódnézet és vezérlőgombok.</td></tr>
+        <tr><td><code>script.js</code></td><td>A tényleges átváltási logika: <code>nev()</code>, <code>jo()</code>, <code>valt()</code>, <code>atvalt()</code>.</td></tr>
+        <tr><td><code>megjelenites.js</code></td><td>A vizualizáció: kódkiírás, szintaxis-kiemelés, a kód műszerezése, a lépések rögzítése és lejátszása.</td></tr>
+        <tr><td><code>style.css</code></td><td>A teljes oldal megjelenése.</td></tr>
+        <tr><td><code>dokumentacio.html</code></td><td>Ez a dokumentáció.</td></tr>
+        <tr><td><code>tesztek.html</code></td><td>A szoftvertesztelési dokumentáció (tesztesetek, állapotok, hibajegyek).</td></tr>
+        <tr><td><code>.github/workflows/deploy.yml</code></td><td>A tárhelyre történő automatikus feltöltés beállítása.</td></tr>
+    </table>
 
-    %% --- ESEMÉNYEK ÉS INDULÁS ---
-    S_Idle((IDLE ÁLLAPOT<br>Várakozás felhasználóra)):::state
-    
-    E_Click>EVENT: Kattintás az Átváltás gombon]:::event
-    E_Enter>EVENT: Enter billentyű lenyomása]:::event
-    
-    S_Idle --> E_Click
-    S_Idle --> E_Enter
-    
-    E_Click --> A_Read[ACTION: Adatok beolvasása a DOM-ból<br>szam, alap, cel]:::action
-    E_Enter --> A_Read
-    
-    %% --- ALAP LOGIKA ÉS VALIDÁCIÓ ---
-    A_Read --> D_Empty{Üres a bemenet?}:::decision
-    
-    D_Empty -- Igen --> S_Error_Empty((ERROR ÁLLAPOT<br>Nincs megadva szám)):::state
-    D_Empty -- Nem --> D_Base{Felhasználó fix alapot<br>választott a legördülőből?}:::decision
-    
-    %% --- FIX ALAP (EGYÉRTELMŰ) ÁG ---
-    D_Base -- Igen --> A_Jo_1[ACTION: jo függvény<br>Karakterenkénti vizsgálat]:::action
-    A_Jo_1 --> D_Valid_1{Karakterek érvényesek<br>az adott alapban?}:::decision
-    D_Valid_1 -- Nem --> S_Error_Format((ERROR ÁLLAPOT<br>Helytelen formátum)):::state
-    D_Valid_1 -- Igen --> A_Valt_1[ACTION: valt konverzió<br>parseInt és toString]:::action
-    A_Valt_1 --> S_Success_1((SUCCESS ÁLLAPOT<br>Eredmény kiírása)):::state
+    <p>A két szkript betöltési sorrendje fontos: az <code>index.html</code> előbb a <code>script.js</code>-t, utána a <code>megjelenites.js</code>-t tölti be, mert a vizualizáció a <code>script.js</code> függvényeinek forráskódját olvassa ki.</p>
 
-    %% --- AUTO ALAP (KÉTÉRTELMŰSÉG) ÁG ---
-    D_Base -- Nem --> A_Loop[ACTION: Ciklus indítása<br>az 2, 10, 16 alapokon]:::action
-    A_Loop --> A_Jo_2[ACTION: jo függvény futtatása<br>mind a 3 számrendszerre]:::action
-    A_Jo_2 --> A_Valt_2[ACTION: valt konverzió futtatása<br>csak az érvényes találatokra]:::action
-    
-    A_Valt_2 --> D_Count{Hány számrendszerben<br>volt érvényes a szám?}:::decision
-    
-    D_Count -- 0 db --> S_Error_None((ERROR ÁLLAPOT<br>Egyik rendszerbe sem illik)):::state
-    D_Count -- 1 db --> S_Success_2((SUCCESS ÁLLAPOT<br>Egyértelmű eredmény kiírása)):::state
-    D_Count -- 2-3 db<br>de mind ugyanazt adja ki --> S_Success_3((SUCCESS ÁLLAPOT<br>Egyértelmű eredmény kiírása)):::state
-    D_Count -- 2-3 db<br>különböző értékekkel --> S_Ambiguous((AMBIGUOUS ÁLLAPOT<br>Kétértelműség Minden<br>lehetséges verzió kiírása)):::state
-    
-    %% --- VISSZATÉRÉS AZ ALAPÁLLAPOTBA ---
-    S_Error_Empty -.-> S_Idle
-    S_Error_Format -.-> S_Idle
-    S_Error_None -.-> S_Idle
-    S_Success_1 -.-> S_Idle
-    S_Success_2 -.-> S_Idle
-    S_Success_3 -.-> S_Idle
-    S_Ambiguous -.-> S_Idle
-    </pre>
-
-    <h2>3. A vizuális felület és a lejátszó (<code>megjelenites.js</code>)</h2>
-    <p>Hogy a programozás tanulását segítsem, építettem egy egyedi vizualizációs eszközt. Ez a <code>megjelenites.js</code> fájlban található, és jóval haladóbb technikákat alkalmaz.</p>
-    
-    <h3>3.1 A kód "Műszerezése" (Instrumentation)</h3>
-    <p>Ahelyett, hogy a kódot kézzel bemásoltam volna a HTML-be, a program a <code>Function.toString()</code> metódus segítségével <b>kiolvassa a saját kódját</b> a <code>script.js</code>-ből. Ezt a szöveget sorokra bontja.</p>
-    <p>A <code>muszerez()</code> függvény reguláris kifejezésekkel (RegEx) és szövegkereséssel módosítja ezt a kódot: minden sor végére beszúr egy titkos <code>__lepes(...)</code> függvényhívást. Amikor a módosított kód (amit a <code>new Function()</code> segítségével hozunk létre és futtatunk le a háttérben) lefut, minden egyes lépésnél elküldi nekünk, hogy hanyas sorban tart, és mik a változók értékei. Ezt hívják a szoftverfejlesztésben <b>Instrumentation</b>-nek (műszerezésnek).</p>
-
-    <h3>3.2 A lépésről-lépésre lejátszó</h3>
-    <p>Miután a műszerezett kód a háttérben a másodperc töredéke alatt lefutott, összegyűjtjük a lépéseket egy tömbbe (<code>lepesek</code>). Amikor rákattintasz a "Lejátszás" gombra, egy <code>setTimeout()</code> által vezérelt ciklus (a <code>ciklus()</code> függvény) ezen a tömbön megy végig.</p>
-    <p>Minden lépésnél:</p>
+    <h2 id="hasznalat">2. Felhasználói útmutató</h2>
     <ol>
-        <li>Kiemeli a megfelelő sort a jobb oldali kódszerkesztőben.</li>
-        <li>Kiszámolja és frissíti a "Változók" doboz tartalmát. Ha egy érték változott az előző sorhoz képest, sárgán felvillantja.</li>
-        <li>Amikor a kód épp a <code>jo()</code> függvény karaktervizsgáló részénél tart, a bal alsó sarokban sárgával kiemeli az épp vizsgált karaktert, majd megadja neki a zöld (✓) vagy piros (✗) jelzést. Ezt a HTML Elemek osztályainak (<code>className</code>, <code>classList</code>) módosításával éri el (DOM manipuláció).</li>
+        <li><strong>Szám megadása:</strong> a „Szám” mezőbe legfeljebb 24 karakter írható. A kis- és nagybetű nem számít (<code>1f</code> és <code>1F</code> ugyanaz), a szám előtti és utáni szóközöket a program levágja.</li>
+        <li><strong>Forrás-számrendszer:</strong> a „Milyen számrendszerben van?” menüben választható a kettes, tízes vagy tizenhatos alap. A „Döntse el magától” beállításnál a program mindhárom alapot kipróbálja.</li>
+        <li><strong>Cél-számrendszer:</strong> a „Melyikbe váltsa át?” menüben adható meg, milyen alakban jelenjen meg az eredmény.</li>
+        <li><strong>Átváltás:</strong> az „Átváltás” gomb vagy az Enter billentyű elindítja a számítást és a lejátszást.</li>
+        <li><strong>Lejátszás vezérlése:</strong>
+            <ul>
+                <li><em>Szünet / Folytatás</em>: megállítja vagy folytatja a lejátszást, a végén <em>Újra</em> feliratra vált.</li>
+                <li><em>Lépés ›</em>: egyetlen lépést lép előre, közben a lejátszás megáll.</li>
+                <li><em>Végére »</em>: azonnal az utolsó lépésre ugrik.</li>
+                <li><em>Sebesség csúszka</em>: tíz fokozat, lépésenként kb. 1,1 másodperctől 10 ezredmásodpercig.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Ha a szám több számrendszerben is értelmezhető (például <code>101</code>), a program mindegyik értelmezés eredményét kiírja, és jelzi, hogy a forrás-számrendszer kiválasztásával a kétértelműség megszüntethető.</p>
+
+    <h2 id="elmelet">3. Elméleti háttér: helyiértékes számrendszerek</h2>
+    <p>Egy <em>b</em> alapú helyiértékes számrendszerben a számjegyek értéke a pozíciójuktól függ: a jobbról számított <em>k</em>-adik helyen álló (0-tól számozva) <em>d</em> számjegy értéke <em>d · b<sup>k</sup></em>. A szám értéke ezeknek az összege.</p>
+
+    <table>
+        <tr><th>Számrendszer</th><th>Alap</th><th>Megengedett számjegyek</th><th>Példa</th></tr>
+        <tr><td>Kettes (bináris)</td><td>2</td><td><code>0 1</code></td><td><code>101</code> = 1·4 + 0·2 + 1·1 = 5</td></tr>
+        <tr><td>Tízes (decimális)</td><td>10</td><td><code>0–9</code></td><td><code>255</code> = 2·100 + 5·10 + 5·1</td></tr>
+        <tr><td>Tizenhatos (hexadecimális)</td><td>16</td><td><code>0–9, A–F</code> (A=10 … F=15)</td><td><code>1F</code> = 1·16 + 15·1 = 31</td></tr>
+    </table>
+
+    <h3>3.1 Átváltás más alapra</h3>
+    <p>Tízes számrendszerből <em>b</em> alapra a maradékos osztás módszerével lehet váltani: a számot addig osztjuk <em>b</em>-vel, amíg a hányados nulla nem lesz, a maradékokat pedig fordított sorrendben olvassuk össze. Például 31 kettes számrendszerbe:</p>
+    <table>
+        <tr><th>Osztás</th><th>Hányados</th><th>Maradék</th></tr>
+        <tr><td>31 : 2</td><td>15</td><td>1</td></tr>
+        <tr><td>15 : 2</td><td>7</td><td>1</td></tr>
+        <tr><td>7 : 2</td><td>3</td><td>1</td></tr>
+        <tr><td>3 : 2</td><td>1</td><td>1</td></tr>
+        <tr><td>1 : 2</td><td>0</td><td>1</td></tr>
+    </table>
+    <p>Az eredmény alulról felfelé olvasva <code>11111</code>. A program ezt a műveletet nem kézzel valósítja meg, hanem a JavaScript beépített <code>parseInt()</code> és <code>Number.prototype.toString()</code> függvényeit használja (lásd 4.3).</p>
+
+    <h3>3.2 A kétértelműség oka</h3>
+    <p>A kettes számrendszer számjegyei a tízes számjegyeinek, a tízes számjegyek pedig a tizenhatos számjegyeinek részhalmazai. Ezért minden érvényes kettes szám egyben érvényes tízes és tizenhatos szám is, csak más értékkel. A <code>101</code> jelentése kettesben 5, tízesben 101, tizenhatosban 257. A beírt karaktersorozatból tehát önmagában nem dönthető el egyértelműen az alap, csak az, hogy melyik alapokban <em>lehetséges</em>. A program ezért nem „tippel”, hanem minden lehetséges értelmezést megmutat.</p>
+    <p class="forras-ref">Források: [1], [2], [3]</p>
+
+    <h2 id="logika">4. A logikai mag (<code>script.js</code>)</h2>
+    <p>A <code>script.js</code> négy függvényből áll. A kód egyszerű, egymásba ágyazott <code>if</code> szerkezetekkel és számlálós <code>for</code> ciklusokkal dolgozik, minden utasítás külön sorban áll. Ez a formázás nemcsak az olvashatóságot szolgálja, hanem a vizualizáció működésének feltétele is (lásd 5.3).</p>
+
+    <h3>4.1 <code>nev(alap)</code></h3>
+    <table>
+        <tr><th>Paraméter</th><th>Visszatérési érték</th></tr>
+        <tr><td><code>alap</code>: 2, 10 vagy 16</td><td>A számrendszer magyar neve: <code>"kettes"</code>, <code>"tízes"</code>, <code>"tizenhatos"</code></td></tr>
+    </table>
+    <p>Kizárólag a kiírt szövegek előállítására szolgál. Minden 2-től és 10-től eltérő értékre <code>"tizenhatos"</code>-t ad vissza, ami azért elegendő, mert a program csak ezt a három alapot használja.</p>
+
+    <h3>4.2 <code>jo(szam, alap)</code> – karakterek érvényességének vizsgálata</h3>
+    <table>
+        <tr><th>Paraméter</th><th>Leírás</th></tr>
+        <tr><td><code>szam</code></td><td>A vizsgált szöveg, már levágott szóközökkel és nagybetűsítve.</td></tr>
+        <tr><td><code>alap</code></td><td>A vizsgált számrendszer alapja.</td></tr>
+        <tr><td><em>visszatérés</em></td><td><code>true</code>, ha minden karakter megengedett az adott alapban, különben <code>false</code>.</td></tr>
+    </table>
+    <p>A függvény egy <code>for</code> ciklussal karakterenként halad végig a szövegen. Minden karakterre három feltételt vizsgál, de egyszerre mindig csak az aktuális alaphoz tartozó feltétel lehet igaz:</p>
+    <ul>
+        <li><strong>alap = 2:</strong> a karakter csak <code>"0"</code> vagy <code>"1"</code> lehet.</li>
+        <li><strong>alap = 10:</strong> a karakter nem lehet kisebb <code>"0"</code>-nál és nem lehet nagyobb <code>"9"</code>-nél.</li>
+        <li><strong>alap = 16:</strong> a karakternek a <code>"0"–"9"</code> vagy az <code>"A"–"F"</code> tartományba kell esnie.</li>
+    </ul>
+    <p>Az első hibás karakternél a függvény azonnal <code>false</code>-szal visszatér (korai kilépés), a további karaktereket már nem nézi meg. Ha a ciklus hiba nélkül végigér, az eredmény <code>true</code>.</p>
+
+    <div class="megjegyzes">
+        <strong>Miért működik a <code>c &lt; "0"</code> összehasonlítás?</strong><br>
+        JavaScriptben két szöveg összehasonlítása a karakterek kódjai alapján történik. Az ASCII (és a Unicode első 128 karaktere) szerint a számjegyek kódja 48–57, a nagybetűké 65–90, és mindkét tartomány folytonos. Így például a <code>c &gt;= "A" &amp;&amp; c &lt;= "F"</code> pontosan a 65–70 kódú karaktereket engedi át. Az ékezetes betűk (pl. <code>Á</code>) kódja ezeken kívül esik, ezért azokat a függvény helyesen elutasítja. [4], [5]
+    </div>
+
+    <p>A futási idő a szöveg hosszával arányos (legfeljebb <em>n</em> lépés egy alapra, automatikus módban legfeljebb 3<em>n</em>). A 24 karakteres beviteli korlát miatt ez legfeljebb 72 karaktervizsgálatot jelent.</p>
+
+    <h3>4.3 <code>valt(szam, alap, cel)</code> – az átváltás</h3>
+    <pre><code>var ertek = parseInt(szam, alap);
+if (ertek &gt; Number.MAX_SAFE_INTEGER) {
+    return "túl nagy szám";
+}
+return ertek.toString(cel).toUpperCase();</code></pre>
+    <ul>
+        <li><code>parseInt(szam, alap)</code> a szöveget az adott alapú számként értelmezi és számmá alakítja. A második paraméter (radix) megadása kötelező gyakorlat, különben a böngésző maga próbálja kitalálni az alapot. [6]</li>
+        <li><code>ertek.toString(cel)</code> a számot a cél alapú szöveges alakra alakítja. A <code>toString</code> kisbetűs hexadecimális számjegyeket ad (<code>ff</code>), ezért a <code>toUpperCase()</code> egységesen nagybetűsít. [7]</li>
+    </ul>
+
+    <h3>4.4 A nagy számok kezelése</h3>
+    <p>A JavaScript a számokat 64 bites lebegőpontos (IEEE 754 double) formátumban tárolja. Ebben a formátumban 2<sup>53</sup> − 1 = 9 007 199 254 740 991 a legnagyobb egész, amely és amely alatt minden egész pontosan ábrázolható; ez a <code>Number.MAX_SAFE_INTEGER</code> értéke. Efölött a szomszédos ábrázolható számok között már 2, 4, 8… távolság van, vagyis bizonyos egészeket a gép csak kerekítve tud tárolni, hibaüzenet nélkül. [8], [9]</p>
+    <p>A <code>valt()</code> ezért az átalakítás után ellenőrzi az értéket: ha nagyobb a biztonságos határnál, nem ad vissza esetleg hibás eredményt, hanem a „túl nagy szám” szöveget. A határérték pontos viselkedése a tesztdokumentációban ellenőrzésre került: <code>9007199254740991</code> még átváltható (<code>1FFFFFFFFFFFFF</code>), <code>9007199254740992</code> már „túl nagy szám”.</p>
+
+    <h3>4.5 <code>atvalt()</code> – a vezérlő függvény</h3>
+    <p>Ez a függvény fut le az Átváltás gomb megnyomásakor. Lépései:</p>
+    <ol>
+        <li>Beolvassa a mezők értékét a <code>document.getElementById()</code> segítségével. A legördülő menük értéke szöveg, ezért <code>parseInt()</code>-tel számmá alakítja őket. [10]</li>
+        <li>A számot <code>trim()</code>-mel megtisztítja a szélső szóközöktől, és <code>toUpperCase()</code>-szel nagybetűsíti. [11]</li>
+        <li>Üres bemenetnél hibaüzenetet ír ki és kilép.</li>
+        <li><strong>Megadott alap esetén</strong> (<code>alap != 0</code>) egyetlen <code>jo()</code> hívással ellenőriz, majd vagy átvált, vagy kiírja, hogy a szám nem az adott számrendszerbe tartozik.</li>
+        <li><strong>Automatikus módban</strong> a <code>[2, 10, 16]</code> tömbön halad végig. Minden érvényes alapnál elvégzi az átváltást, és közben a következő változókat vezeti:
+            <table>
+                <tr><th>Változó</th><th>Jelentése</th></tr>
+                <tr><td><code>db</code></td><td>Hány alapban érvényes a szám.</td></tr>
+                <tr><td><code>elso</code></td><td>Az első érvényes értelmezés eredménye.</td></tr>
+                <tr><td><code>talalt</code></td><td>Az első érvényes alap (ezt írja ki, ha csak egy találat van).</td></tr>
+                <tr><td><code>egyforma</code></td><td>Igaz marad, amíg minden érvényes értelmezés ugyanazt az eredményt adja.</td></tr>
+                <tr><td><code>szoveg</code></td><td>Az összes értelmezés soronkénti listája a kétértelmű esethez.</td></tr>
+            </table>
+        </li>
+        <li>A ciklus után a <code>db</code> és az <code>egyforma</code> alapján négy kimenet lehetséges (ez a tesztdokumentáció döntési táblájának alapja):
+            <ul>
+                <li><code>db = 0</code>: a szám egyik számrendszerben sem érvényes.</li>
+                <li><code>db = 1</code>: egyértelmű, a program megnevezi a felismert számrendszert.</li>
+                <li><code>db &gt; 1</code> és <code>egyforma</code>: például <code>0</code> vagy <code>1</code>, ahol minden értelmezés ugyanazt adja, ezért egy eredmény elegendő.</li>
+                <li><code>db &gt; 1</code> és nem <code>egyforma</code>: kétértelmű, minden értelmezés megjelenik.</li>
+            </ul>
+        </li>
     </ol>
 
-    <h2>4. Dizájn és megjelenés (<code>style.css</code>)</h2>
-    <p>A weboldal dizájnja egy klasszikus, 90-es évekbeli CRT monokróm terminálra hajaz. A stílus külső template és referencia alapján készült el.</p>
-    <ul>
-        <li>A kód színezéséhez saját, egyszerű reguláris kifejezés alapú színezőt írtam a <code>szinez()</code> függvényben, ami span-okba csomagolja a kulcsszavakat, számokat és stringeket, a CSS pedig zöldes terminál színeket ad nekik.</li>
-        <li>A foszforos ragyogást (Glow), a CRT görbületet és a villódzást tiszta CSS3 effektekkel (box-shadow, text-shadow, keyframes) értük el.</li>
-    </ul>
-
-    <div class="forrasok">
-        <h3>Felhasznált források és kapcsolódó irodalom</h3>
-        <ul>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Number" target="_blank">Számrendszerek és ábrázolásuk JavaScriptben (MDN Web Docs)</a></li>
-            <li><a href="https://www.geeksforgeeks.org/number-system-and-base-conversions/" target="_blank">Alapvető számrendszerek és konverziók: Kettes és Tizenhatos (GeeksforGeeks)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt" target="_blank">A <code>parseInt()</code> működése és a 'radix' paraméter (MDN Web Docs)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString" target="_blank">A <code>Number.toString()</code> működése alapszám-váltáshoz (MDN Web Docs)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER" target="_blank">A JavaScript biztonságos maximum száma - <code>MAX_SAFE_INTEGER</code> (MDN Web Docs)</a></li>
-            <li><a href="https://floating-point-gui.de/" target="_blank">Lebegőpontos számábrázolás (Double-precision floating-point) (The Floating-Point Guide)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model" target="_blank">DOM - Document Object Model specifikáció (MDN Web Docs)</a></li>
-            <li><a href="https://www.ibm.com/docs/en/ibm-mq/9.2?topic=monitoring-instrumenting-your-application" target="_blank">Instrumentation (Kódműszerezés) alapelvei (IBM Documentation)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString" target="_blank">Függvények memóriából történő kiolvasása - <code>Function.toString()</code> (MDN Web Docs)</a></li>
-        </ul>
+    <div class="megjegyzes">
+        <strong>Biztonsági megfontolás:</strong> az eredmény az <code>innerHTML</code> tulajdonságon keresztül kerül az oldalra (a sortörések miatt). A felhasználó által beírt szöveg azonban sosem kerül bele közvetlenül, csak a <code>nev()</code> szövegei és a <code>valt()</code> által előállított, kizárólag számjegyekből és A–F betűkből álló eredmények. Így HTML-kód beinjektálására nincs lehetőség. [12]
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
+
+    <h3>4.6 Folyamatábra</h3>
+    <pre class="mermaid">
+flowchart TD
+    classDef lepes fill:#2d2d2d,stroke:#555,color:#e0e0e0
+    classDef dontes fill:#1e1e1e,stroke:#64ffda,color:#ffffff
+    classDef kimenet fill:#121212,stroke:#888,color:#64ffda
+
+    A(["atvalt() indul"]):::lepes --> B["szam = trim + toUpperCase"]:::lepes
+    B --> C{"Üres a szam?"}:::dontes
+    C -- igen --> K0["Nem adtál meg számot!"]:::kimenet
+    C -- nem --> D{"Ki van választva alap?"}:::dontes
+    D -- igen --> E{"jo(szam, alap)"}:::dontes
+    E -- igaz --> K1["Eredmény: valt(szam, alap, cel)"]:::kimenet
+    E -- hamis --> K2["Ez nem ... szám!"]:::kimenet
+    D -- nem --> F["Következő alap a 2, 10, 16 listából"]:::lepes
+    F --> G{"jo(szam, alap)"}:::dontes
+    G -- igaz --> H["uj = valt(...), db növelése, szoveg bővítése"]:::lepes
+    G -- hamis --> I{"Van még alap?"}:::dontes
+    H --> I
+    I -- igen --> F
+    I -- nem --> J{"db és egyforma"}:::dontes
+    J -- "db = 0" --> K3["Nem kettes, tízes vagy tizenhatos"]:::kimenet
+    J -- "db = 1" --> K4["Felismert számrendszer és eredmény"]:::kimenet
+    J -- "több, egyforma" --> K5["Egyetlen közös eredmény"]:::kimenet
+    J -- "több, eltérő" --> K6["Minden értelmezés listája"]:::kimenet
+    </pre>
+
+    <h2 id="vizualizacio">5. A lépésenkénti vizualizáció (<code>megjelenites.js</code>)</h2>
+    <p>A vizualizáció célja, hogy a felhasználó ne csak az eredményt lássa, hanem azt is, hogyan jut el hozzá a program. Az ötlet az oktatásban használt programvizualizációs eszközökből származik; a legismertebb ilyen a <em>Python Tutor</em>, amely a kód lépésenkénti végrehajtását és a változók állapotát jeleníti meg [13]. Az itt alkalmazott megoldás ennek egy jóval egyszerűbb, kizárólag erre az egy programra szabott változata.</p>
+    <p>A működés két fázisra bontható:</p>
+    <ol>
+        <li><strong>Felvétel:</strong> a program a háttérben egy módosított („műszerezett”) változatban lefuttatja az <code>atvalt()</code> függvényt, és minden sor előtt elmenti, hol tart és mik a változók értékei.</li>
+        <li><strong>Lejátszás:</strong> a rögzített lépéseket időzítve, egyenként jeleníti meg.</li>
+    </ol>
+
+    <pre class="mermaid">
+sequenceDiagram
+    actor F as Felhasználó
+    participant UI as Oldal (index.html)
+    participant M as megjelenites.js
+    participant A as Műszerezett atvalt
+    F->>UI: Átváltás gomb vagy Enter
+    UI->>M: inditas()
+    M->>A: felvesz() meghívja futtathato()
+    loop minden végrehajtott sor
+        A->>M: __lepes(sor, függvény, változók)
+        M->>M: rogzit() elmenti a lépést
+    end
+    A-->>M: végső eredmény
+    loop setTimeout időzítővel
+        M->>UI: sorMutat, valtozokMutat, tablaFrissit
+    end
+    M->>UI: befejez() kiírja az eredményt
+    </pre>
+
+    <h3>5.1 A forráskód kiolvasása</h3>
+    <pre><code>var forras = nev.toString() + "\n\n" + jo.toString() + "\n\n" + valt.toString() + "\n\n" + atvalt.toString();
+var sorok = forras.split("\n");</code></pre>
+    <p>A JavaScriptben egy függvény <code>toString()</code> metódusa a függvény forráskódját adja vissza szövegként, eredeti formázással együtt [14]. Így a kódnézetben megjelenő kód nem egy kézzel bemásolt példány, hanem pontosan az, ami ténylegesen fut. Ha a <code>script.js</code> módosul, a kódnézet automatikusan követi. A szöveget a program soronként egy tömbbe bontja; a további feldolgozás erre a <code>sorok</code> tömbre épül.</p>
+
+    <h3>5.2 Szintaxis-kiemelés (<code>szinez()</code>)</h3>
+    <p>A színezés két lépésben történik:</p>
+    <ol>
+        <li><strong>HTML-escape:</strong> a <code>&amp;</code>, <code>&lt;</code> és <code>&gt;</code> karaktereket a megfelelő HTML entitásra cseréli. Az <code>&amp;</code> cseréje szándékosan az első, különben a később beszúrt entitások <code>&amp;</code> jelét is lecserélné. Erre azért van szükség, mert a kódban szerepel a <code>&lt;</code> jel (pl. <code>i &lt; szam.length</code>), amit a böngésző egyébként HTML-elem kezdetének venne. [12]</li>
+        <li><strong>Reguláris kifejezés visszahívó függvénnyel:</strong> egyetlen reguláris kifejezés négy alternatívát tartalmaz, mindegyik saját csoportban:
+            <table>
+                <tr><th>Csoport</th><th>Minta</th><th>Mit talál</th><th>CSS osztály</th></tr>
+                <tr><td>1.</td><td><code>("[^"]*")</code></td><td>Idézőjeles szöveg</td><td><code>str</code></td></tr>
+                <tr><td>2.</td><td><code>\b(function|var|if|...)\b</code></td><td>Kulcsszavak, teljes szóként</td><td><code>kw</code></td></tr>
+                <tr><td>3.</td><td><code>\b(\d+)\b</code></td><td>Számok</td><td><code>num</code></td></tr>
+                <tr><td>4.</td><td><code>\b([a-zA-Z]+)(?=\()</code></td><td>Függvénynév, amit nyitó zárójel követ</td><td><code>fn</code></td></tr>
+            </table>
+            A <code>String.prototype.replace()</code> második paramétereként megadott függvény minden találatnál megkapja a csoportokat, és amelyik nem üres, az alapján dönti el a színt [15]. A 4. csoport <em>lookahead</em> (előretekintő) feltételt használ: a zárójelet csak megköveteli, de nem veszi bele a találatba [16]. Mivel a szövegeket az 1. csoport előbb „elkapja”, egy idézőjelen belüli kulcsszó nem kap kulcsszó-színt.
+        </li>
+    </ol>
+    <p>A <code>kodKiir()</code> függvény ezután minden sort egy <code>kodsor</code> osztályú <code>div</code>-be tesz, sorszámmal és egyedi azonosítóval (<code>kodsor0</code>, <code>kodsor1</code>, …), hogy a lejátszás során a sorok közvetlenül elérhetők legyenek.</p>
+
+    <h3>5.3 A kód műszerezése (<code>valtozoLista()</code> és <code>muszerez()</code>)</h3>
+    <p>A műszerezés (instrumentation) azt jelenti, hogy a programba plusz utasításokat illesztünk, amelyek a működését nem változtatják meg, de információt gyűjtenek róla. Ezt a technikát használják például a kódlefedettség-mérő eszközök is, mint az Istanbul, amely a JavaScript kódba számlálókat szúr be, hogy mérje, mely sorok futottak le [17].</p>
+
+    <p><strong>Változólista:</strong> a <code>valtozoLista()</code> minden függvény fejlécéből kiolvassa a paramétereket (a zárójelek közötti részt vesszőknél szétvágva), majd a függvény törzsében reguláris kifejezéssel (<code>/var (\w+)/g</code>) összegyűjti a deklarált változókat. Ebből egy objektum-literált készít szövegként, például a <code>jo</code> függvényre:</p>
+    <pre><code>{szam: szam, alap: alap, i: i, c: c}</code></pre>
+
+    <p><strong>Beszúrási szabályok:</strong> a <code>muszerez()</code> soronként halad, és a sor típusa szerint szúrja be a <code>__lepes(sorszám, "függvénynév", változók)</code> hívást:</p>
+    <table>
+        <tr><th>Sor típusa</th><th>Beszúrás módja</th><th>Indoklás</th></tr>
+        <tr><td>Üres sor, <code>}</code></td><td>Nincs beszúrás</td><td>Nem végrehajtható sor.</td></tr>
+        <tr><td><code>+</code>-szal kezdődő sor</td><td>Nincs beszúrás</td><td>Egy előző sor folytatása (szövegösszefűzés), oda utasítás nem szúrható.</td></tr>
+        <tr><td><code>function ...</code>, <code>} else {</code></td><td>A sor végére, a nyitó kapcsos zárójel után</td><td>Így a hívás a blokk első utasítása lesz.</td></tr>
+        <tr><td><code>if (</code>, <code>} else if (</code></td><td>A feltétel elejére, vesszővel elválasztva</td><td>A vessző operátor kiértékeli a hívást, de a feltétel értéke az utolsó kifejezés marad [18].</td></tr>
+        <tr><td><code>for (</code></td><td>Az első <code>; </code> után, a ciklusfeltétel elejére</td><td>Így a hívás minden ellenőrzéskor, azaz minden ismétlésnél lefut.</td></tr>
+        <tr><td>Minden más</td><td>A sor elejére, az eredeti behúzás megtartásával</td><td>Egyszerű utasítás előtti lépés.</td></tr>
+    </table>
+
+    <p>Példa a <code>jo</code> függvény első sorainak átalakítására (a változólistát az olvashatóság kedvéért <code>{...}</code> jelöli):</p>
+    <pre><code>function jo(szam, alap) { __lepes(10, "jo", {...});
+    for (var i = 0; __lepes(11, "jo", {...}), i &lt; szam.length; i++) {
+        __lepes(12, "jo", {...}); var c = szam[i];
+
+        if (__lepes(14, "jo", {...}), alap == 2 &amp;&amp; c != "0" &amp;&amp; c != "1") {
+            __lepes(15, "jo", {...}); return false;</code></pre>
+
+    <div class="megjegyzes">
+        <strong>Miért nem okoz hibát, hogy a függvény elején már <code>i: i</code> és <code>c: c</code> szerepel?</strong><br>
+        A <code>var</code> kulcsszóval deklarált változók deklarációját a JavaScript a függvény elejére „emeli” (hoisting), értékük a tényleges értékadásig <code>undefined</code>. Így a változólista már a függvény első sorában kiértékelhető, a vizualizáció pedig <code>undefined</code> értékként mutatja a még be nem állított változókat. [19]
+    </div>
+
+    <p><strong>A műszerezett kód futtathatóvá tétele:</strong></p>
+    <pre><code>futtathato = new Function("__lepes", muszerez() + "\nreturn atvalt;")(rogzit);</code></pre>
+    <p>A <code>Function</code> konstruktor szövegből hoz létre függvényt [20]. Az itt létrehozott függvény egyetlen paramétere a <code>__lepes</code>, törzse pedig a négy műszerezett függvény, a végén egy <code>return atvalt;</code> utasítással. Ezt azonnal meghívva a <code>rogzit</code> függvénnyel, a <code>__lepes</code> név a belső függvények számára a <code>rogzit</code>-et jelenti (closure, lezárás [21]). Az eredmény a műszerezett <code>atvalt</code>, amely a saját, szintén műszerezett <code>jo</code>, <code>valt</code> és <code>nev</code> függvényeit hívja. Az eredeti, globális függvények érintetlenek maradnak.</p>
+    <p>A <code>new Function</code> szöveges kódot futtat, ezért ismeretlen forrásból származó szöveggel veszélyes lenne. Itt azonban a szöveg kizárólag az oldal saját, a <code>toString()</code>-gel kiolvasott kódjából készül, felhasználói bemenet nem kerül bele.</p>
+
+    <h3>5.4 A lépések rögzítése (<code>rogzit()</code>)</h3>
+    <p>Minden <code>__lepes</code> hívás egy objektumot tesz a <code>lepesek</code> tömbbe: <code>{ sor, fv, ertekek }</code>. A változók értékéről másolat készül, a tömbökről a <code>slice()</code> segítségével, hogy a későbbi módosítások ne írják felül a már rögzített állapotot [22]. Védelmi okból 20 000 lépés felett a rögzítés kivételt dob, amit a <code>felvesz()</code> egy <code>try...catch</code> blokkban elkap, és üzenetet ír ki a végtelen vagy túl hosszú futás helyett [23]. A rögzítés közben a műszerezett <code>atvalt</code> ténylegesen beírja az eredményt az oldalba; a <code>felvesz()</code> ezt elmenti a <code>vegsoEredmeny</code> változóba, majd kiüríti a mezőt, hogy az eredmény csak a lejátszás megfelelő pontján jelenjen meg.</p>
+
+    <h3>5.5 A lejátszás (<code>ciklus()</code>, <code>kovetkezo()</code>, <code>lepesMutat()</code>)</h3>
+    <p>A lejátszás nem egy hagyományos ciklus, hanem önmagát újraütemező <code>setTimeout</code> hívások sorozata [24]. Egy blokkoló ciklus megfagyasztaná a böngészőt, és a felhasználó nem látná a köztes állapotokat. Az időzítő minden lépés után a csúszkához tartozó késleltetéssel hívja meg újra a <code>ciklus()</code> függvényt:</p>
+    <table>
+        <tr><th>Csúszka</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr>
+        <tr><td>Késleltetés (ms)</td><td>1100</td><td>750</td><td>500</td><td>350</td><td>240</td><td>160</td><td>100</td><td>60</td><td>30</td><td>10</td></tr>
+    </table>
+    <p>Egy lépés megjelenítésekor a <code>lepesMutat()</code> három dolgot frissít:</p>
+    <ul>
+        <li><strong><code>sorMutat()</code>:</strong> a futó sor <code>aktiv</code>, a már érintett sorok <code>volt</code> osztályt kapnak (<code>classList</code> [25]). Ha a sor kilóg a látható területből, a kódnézet <code>scrollTo()</code> segítségével, sima görgetéssel odaugrik [26].</li>
+        <li><strong><code>valtozokMutat()</code>:</strong> kiírja az aktuális függvény változóit. Függvényenként megjegyzi az előző értékeket, és a megváltozott változót <code>valtozott</code> osztállyal kiemeli. A szöveges értékeket idézőjelben, a tömböket szögletes zárójelben, a DOM-elemeket <code>&lt;p#eredmeny&gt;</code> alakban jeleníti meg (<code>formaz()</code>).</li>
+        <li><strong><code>tablaFrissit()</code>:</strong> lásd 5.6.</li>
+    </ul>
+    <p>A lejátszás állapotait (kezdő, fut, szünet, vége) és az ezek közötti átmeneteket a tesztdokumentáció állapotátmenet-táblája írja le részletesen.</p>
+
+    <h3>5.6 A karaktervizsgáló tábla (<code>tablaEpit()</code>, <code>tablaFrissit()</code>)</h3>
+    <p>Átváltáskor a <code>tablaEpit()</code> minden vizsgálandó alaphoz (automatikus módban mindháromhoz) létrehoz egy sort a <code>document.createElement()</code> segítségével [27]: egy címkét, karakterenként egy cellát és egy állapotjelvényt. A karakterek a <code>textContent</code> tulajdonságon keresztül kerülnek a cellákba, így a beírt szöveg HTML-ként sosem értelmeződik [28].</p>
+    <p>A <code>tablaFrissit()</code> csak a <code>jo</code> függvény lépéseire reagál, és a lépés <code>alap</code> változója alapján választja ki a megfelelő sort:</p>
+    <table>
+        <tr><th>A futó sor</th><th>Hatás a táblán</th></tr>
+        <tr><td><code>function jo...</code></td><td>Minden cella alaphelyzetbe, jelvény: „vizsgálja...”</td></tr>
+        <tr><td>Ciklus belseje, <code>i</code> = k</td><td>A 0…k−1. cella zöld pipa, a k. cella kiemelve (<code>most</code>)</td></tr>
+        <tr><td><code>return false</code></td><td>Az <code>i</code>. cella piros X, jelvény: „nem érvényes”</td></tr>
+        <tr><td><code>return true</code></td><td>Minden cella zöld pipa, jelvény: „érvényes”</td></tr>
+    </table>
+
+    <h3>5.7 Eseménykezelés</h3>
+    <p>A gombok és az Enter billentyű az <code>addEventListener()</code> segítségével kapcsolódnak a megfelelő függvényekhez [29]. Az Enter lenyomását a <code>keydown</code> esemény <code>key</code> tulajdonságával ismeri fel a program [30].</p>
+    <table>
+        <tr><th>Esemény</th><th>Függvény</th></tr>
+        <tr><td>Átváltás gomb, Enter a szám mezőben</td><td><code>inditas()</code></td></tr>
+        <tr><td>Lejátszás / Szünet / Újra gomb</td><td><code>lejatszasValt()</code></td></tr>
+        <tr><td>Lépés gomb</td><td><code>egyLepes()</code></td></tr>
+        <tr><td>Végére gomb</td><td><code>vegere()</code></td></tr>
+    </table>
+    <p class="forras-ref">Források: [13]–[30]</p>
+
+    <h2 id="dizajn">6. Megjelenés (<code>style.css</code>)</h2>
+    <p>A felület sötét hátterű, egyszerű, „lapos” (flat) kialakítású: nincsenek színátmenetek, árnyékok és animációk, a hangsúlyt egyetlen kiemelőszín adja. A cél a jó olvashatóság és az, hogy a vizualizáció állapotai (aktív sor, megváltozott változó, érvényes vagy hibás karakter) egyértelműen elkülönüljenek.</p>
+    <table>
+        <tr><th>Szín</th><th>Felhasználás</th></tr>
+        <tr><td><code>#121212</code></td><td>Oldal háttere</td></tr>
+        <tr><td><code>#1e1e1e</code></td><td>Kártyák, dobozok háttere</td></tr>
+        <tr><td><code>#64ffda</code></td><td>Kiemelés: linkek, aktív cella, érvényes karakter, megváltozott változó</td></tr>
+        <tr><td><code>#ff5252</code></td><td>Hibás karakter, „nem érvényes” jelvény</td></tr>
+    </table>
+    <p>Az elrendezés Flexboxra épül [31]: a <code>main</code> elem két oszlopa (bal oldalon az átváltó és a tábla, jobb oldalon a kódnézet) a <code>flex-wrap: wrap</code> és a <code>min-width</code> beállítás miatt keskeny képernyőn automatikusan egymás alá kerül. A kódnézet és a változók monospace betűtípust használnak, hogy a kód oszlopai egymás alatt maradjanak. A betűtípusok a Google Fonts szolgáltatásból töltődnek be [32].</p>
+
+    <h2 id="korlatok">7. Ismert korlátok és továbbfejlesztési lehetőségek</h2>
+    <table>
+        <tr><th>Korlát</th><th>Magyarázat</th><th>Lehetséges megoldás</th></tr>
+        <tr><td>Legfeljebb 2<sup>53</sup> − 1 értékű számok</td><td>A <code>Number</code> típus pontossági határa (4.4).</td><td>A <code>BigInt</code> típus használata, amely tetszőleges méretű egészeket kezel [33].</td></tr>
+        <tr><td>Csak nemnegatív egészek</td><td>Előjel és tizedesjel nem megengedett karakter.</td><td>Előjel külön kezelése, törtrész átváltása szorzásos módszerrel.</td></tr>
+        <tr><td>Csak 2, 10 és 16 alap</td><td>A <code>jo()</code> feltételei erre a háromra vannak megírva.</td><td>Általános vizsgálat: a karakter értéke kisebb legyen, mint az alap (2–36).</td></tr>
+        <tr><td>A műszerezés formázásfüggő</td><td>A <code>muszerez()</code> a sorok elejét vizsgálja, ezért feltételezi, hogy egy sorban egy utasítás áll, és az <code>if (</code> / <code>for (</code> alakot követi.</td><td>Valódi szintaktikai elemzés (parser) használata.</td></tr>
+        <tr><td>Rögzítés csak Átváltáskor</td><td>Ha a szám mező az Átváltás után módosul, de új Átváltás nem történik, a Lépés / Újra gomb a régi felvételt játssza le az új számhoz épített táblán (lásd tesztdokumentáció, BUG-03).</td><td>A mező változásakor a felvétel törlése.</td></tr>
+        <tr><td>Dokumentáció ábrái</td><td>A Mermaid könyvtár internetről töltődik be.</td><td>A könyvtár helyi másolatának használata.</td></tr>
+    </table>
+
+    <div class="forrasok" id="forrasok">
+        <h3>8. Források</h3>
+        <p><strong>Számrendszerek, számábrázolás</strong></p>
+        <ol>
+            <li>Knuth, D. E.: <em>The Art of Computer Programming, Vol. 2: Seminumerical Algorithms</em>, 3. kiadás, Addison-Wesley, 1997. 4.1 fejezet: Positional Number Systems.</li>
+            <li><a href="https://www.geeksforgeeks.org/number-system-and-base-conversions/" target="_blank">Number System and Base Conversions (GeeksforGeeks)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" target="_blank">Number (MDN Web Docs)</a></li>
+            <li><a href="https://www.rfc-editor.org/rfc/rfc20" target="_blank">RFC 20: ASCII format for Network Interchange (IETF)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than" target="_blank">Less than (&lt;) – szövegek összehasonlítása (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt" target="_blank">parseInt() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString" target="_blank">Number.prototype.toString() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER" target="_blank">Number.MAX_SAFE_INTEGER (MDN Web Docs)</a></li>
+            <li><a href="https://floating-point-gui.de/" target="_blank">The Floating-Point Guide</a></li>
+        </ol>
+        <p><strong>DOM és alapvető JavaScript</strong></p>
+        <ol start="10">
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById" target="_blank">Document.getElementById() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim" target="_blank">String.prototype.trim() (MDN Web Docs)</a></li>
+            <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank">Cross Site Scripting Prevention Cheat Sheet (OWASP)</a></li>
+        </ol>
+        <p><strong>Vizualizáció, műszerezés</strong></p>
+        <ol start="13">
+            <li>Guo, P. J.: Online Python Tutor: Embeddable Web-Based Program Visualization for CS Education. <em>Proceedings of the 44th ACM Technical Symposium on Computer Science Education (SIGCSE '13)</em>, 2013, pp. 579–584. <a href="https://doi.org/10.1145/2445196.2445368" target="_blank">doi:10.1145/2445196.2445368</a>, valamint <a href="https://pythontutor.com/" target="_blank">pythontutor.com</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString" target="_blank">Function.prototype.toString() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace" target="_blank">String.prototype.replace() – függvény mint csereérték (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Lookahead_assertion" target="_blank">Lookahead assertion (MDN Web Docs)</a>, valamint <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank">Regular expressions útmutató (MDN Web Docs)</a></li>
+            <li><a href="https://istanbul.js.org/" target="_blank">Istanbul – JavaScript kódlefedettség-mérő</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Comma_operator" target="_blank">Comma operator (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting" target="_blank">Hoisting (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function" target="_blank">Function() constructor (MDN Web Docs)</a>, valamint <a href="https://javascript.info/new-function" target="_blank">The "new Function" syntax (javascript.info)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures" target="_blank">Closures (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice" target="_blank">Array.prototype.slice() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch" target="_blank">try...catch (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank">setTimeout() (MDN Web Docs)</a>, valamint <a href="https://javascript.info/settimeout-setinterval" target="_blank">Scheduling: setTimeout and setInterval (javascript.info)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">Element.classList (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo" target="_blank">Element.scrollTo() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement" target="_blank">Document.createElement() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent" target="_blank">Node.textContent (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank">EventTarget.addEventListener() (MDN Web Docs)</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key" target="_blank">KeyboardEvent.key (MDN Web Docs)</a></li>
+        </ol>
+        <p><strong>Megjelenés, továbbfejlesztés</strong></p>
+        <ol start="31">
+            <li><a href="https://css-tricks.com/snippets/css/a-guide-to-flexbox/" target="_blank">A Complete Guide to Flexbox (CSS-Tricks)</a></li>
+            <li><a href="https://fonts.google.com/" target="_blank">Google Fonts</a></li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt" target="_blank">BigInt (MDN Web Docs)</a></li>
+            <li><a href="https://mermaid.js.org/" target="_blank">Mermaid – a dokumentáció ábráinak rajzolása</a></li>
+        </ol>
+    </div>
 
     <footer>
-        Számrendszer Átváltó Dokumentáció - <strong>v1.1.0</strong><br>
-        <span style="opacity: 0.7;">(Dizájn megjegyzés: A 3D Retro CRT vizuális megjelenés külső CSS template alapján lett implementálva.)</span>
+        Számrendszer Átváltó Dokumentáció - <strong>v1.1.0</strong>
     </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        background: "#1e1e1e",
+        primaryColor: "#2d2d2d",
+        primaryTextColor: "#e0e0e0",
+        primaryBorderColor: "#555555",
+        lineColor: "#888888",
+        secondaryColor: "#1e1e1e",
+        tertiaryColor: "#121212",
+        actorBkg: "#2d2d2d",
+        actorBorder: "#64ffda",
+        actorTextColor: "#ffffff",
+        signalColor: "#e0e0e0",
+        signalTextColor: "#e0e0e0",
+        noteBkgColor: "#2d2d2d",
+        noteTextColor: "#e0e0e0",
+        fontFamily: "Inter, sans-serif"
+    }
+});
+</script>
 </body>
 </html>

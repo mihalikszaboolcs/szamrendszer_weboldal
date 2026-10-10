@@ -3,230 +3,436 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Szoftvertesztelés - Tesztesetek és Metrikák</title>
+    <title>Szoftvertesztelés - Számrendszer átváltó</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="doksi">
     <a href="index.html" class="kis-gomb vissza">← Vissza az alkalmazáshoz</a>
-    
-    <h1>Szoftvertesztelés <span>(Szofteszt)</span> dokumentáció</h1>
-    <p style="text-align: center; font-size: 1.1rem; opacity: 0.8;">Epicek, User Story-k, Állapotok (States/Events), Tesztesetek és Defektek (Bugok)</p>
 
-    <h2>1. Agilis fogalmak: Epic és User Story-k</h2>
-    <div class="teszteset epic">
-        <h4>EPIC-01: Intelligens Számrendszer Átváltó Motor</h4>
-        <p><strong>Leírás:</strong> Egy olyan felület létrehozása, amely képes számokat kettes, tízes és tizenhatos számrendszerek között oda-vissza alakítani anélkül, hogy a felhasználónak feltétlenül meg kellene adnia a bemenet típusát.</p>
+    <h1>Szoftvertesztelési <span>dokumentáció</span></h1>
+    <p style="text-align: center; color: #888;">Szofteszt kurzus – a Számrendszer átváltó tesztterve, tesztesetei és hibajegyei</p>
+
+    <div class="tartalom">
+        <strong>Tartalom</strong>
+        <ol>
+            <li><a href="#cel">A tesztelés tárgya, hatóköre és környezete</a></li>
+            <li><a href="#agilis">Epic, user story-k és elfogadási kritériumok</a></li>
+            <li><a href="#technikak">Alkalmazott teszttervezési technikák</a></li>
+            <li><a href="#ekvivalencia">Ekvivalencia-particionálás</a></li>
+            <li><a href="#hatarertek">Határérték-elemzés</a></li>
+            <li><a href="#dontesi">Döntési tábla (automatikus felismerés)</a></li>
+            <li><a href="#funkcionalis">Automatizált funkcionális tesztesetek</a></li>
+            <li><a href="#allapotok">Állapotok, események, állapotátmenet-táblák</a></li>
+            <li><a href="#manualis">Manuális felülettesztek</a></li>
+            <li><a href="#hibak">Hibajegyek</a></li>
+            <li><a href="#osszesites">Összesítés</a></li>
+            <li><a href="#tforrasok">Források</a></li>
+        </ol>
     </div>
-    
+
+    <h2 id="cel">1. A tesztelés tárgya, hatóköre és környezete</h2>
+    <p>A tesztelés tárgya a Számrendszer átváltó webalkalmazás két része:</p>
     <ul>
-        <li><strong>US-01 (User Story):</strong> <em>Felhasználóként</em> szeretném beírni egy számot, <em>azért, hogy</em> lássam az értékét más számrendszerekben.</li>
-        <li><strong>US-02 (User Story):</strong> <em>Felhasználóként</em> szeretném, ha a rendszer automatikusan felismerné a formátumot, <em>azért, hogy</em> ne kelljen kézzel állítgatnom a legördülő menüt.</li>
-        <li><strong>US-03 (User Story):</strong> <em>Tanulóként</em> szeretném vizuálisan követni a kód futását, <em>azért, hogy</em> megértsem, hogyan működik a validációs algoritmus a háttérben.</li>
+        <li><strong>Logikai mag</strong> (<code>script.js</code>): a bemenet érvényességének vizsgálata, a számrendszer felismerése és az átváltás.</li>
+        <li><strong>Vizualizáció</strong> (<code>megjelenites.js</code>): a lépésenkénti lejátszás vezérlése, a karaktervizsgáló tábla és a változók megjelenítése.</li>
     </ul>
 
-    <h2>2. Architektúra: Állapotok és Események (State & Event)</h2>
-    <p>Az alkalmazás egy klasszikus <strong>State Machine (Állapotgép)</strong> mintát követ az eseményvezérelt (Event-driven) JavaScript futtatókörnyezetben.</p>
-    
+    <table>
+        <tr><th>Hatókörön belül</th><th>Hatókörön kívül</th></tr>
+        <tr>
+            <td>Funkcionális helyesség, hibakezelés, határértékek, a lejátszó állapotátmenetei, a dokumentációs oldalak ábráinak megjelenése.</td>
+            <td>Terhelés- és teljesítménytesztelés, akadálymentességi audit, automatizált többböngészős tesztelés.</td>
+        </tr>
+    </table>
+
+    <h3>1.1 Tesztszintek és végrehajtási mód</h3>
+    <table>
+        <tr><th>Szint</th><th>Mit vizsgál</th><th>Végrehajtás</th></tr>
+        <tr><td>Egység- / komponensteszt</td><td>A <code>jo()</code>, <code>valt()</code> és <code>atvalt()</code> függvények</td><td>Automatizált: a valódi <code>script.js</code> függvényeinek meghívása, a <code>document</code> objektum helyettesítésével (mock), így a böngésző nélkül is ellenőrizhető a kiírt eredmény szövege. [9]</td></tr>
+        <tr><td>Rendszerteszt</td><td>A teljes oldal a böngészőben: gombok, lejátszás, tábla</td><td>Manuális, a 9. fejezet tesztprotokollja alapján.</td></tr>
+    </table>
+
+    <h3>1.2 Belépési és kilépési feltételek</h3>
+    <ul>
+        <li><strong>Belépési feltétel:</strong> az oldal hibaüzenet nélkül betölt, a kódnézetben megjelenik a <code>script.js</code> forrása.</li>
+        <li><strong>Kilépési feltétel:</strong> minden automatizált teszteset sikeres, a manuális tesztek végrehajtásra kerültek, és nincs nyitott, magas súlyosságú hiba.</li>
+    </ul>
+
+    <h2 id="agilis">2. Epic, user story-k és elfogadási kritériumok</h2>
+    <div class="teszteset">
+        <h4>EPIC-01: Számrendszer-átváltás oktatási vizualizációval</h4>
+        <p>Egy olyan böngészős eszköz, amely kettes, tízes és tizenhatos számrendszer között vált át, kezeli a kétértelmű és a hibás bemeneteket, és lépésenként megmutatja a mögötte futó kódot. [6]</p>
+    </div>
+
+    <table>
+        <tr><th>ID</th><th>User story</th><th>Elfogadási kritérium (Given / When / Then) [7], [8]</th><th>Tesztek</th></tr>
+        <tr>
+            <td>US-01</td>
+            <td><em>Felhasználóként</em> szeretnék beírni egy számot és kiválasztani a cél-számrendszert, <em>hogy</em> megkapjam az átváltott értéket.</td>
+            <td><em>Adott</em> a „Tizenhatos” forrás és „Kettes” cél, <em>amikor</em> beírom: <code>FF</code> és megnyomom az Átváltást, <em>akkor</em> az eredmény <code>11111111</code>.</td>
+            <td>TC-19, TC-21</td>
+        </tr>
+        <tr>
+            <td>US-02</td>
+            <td><em>Felhasználóként</em> szeretném, ha a program magától felismerné a számrendszert, <em>hogy</em> ne kelljen mindig kiválasztanom.</td>
+            <td><em>Adott</em> a „Döntse el magától” beállítás, <em>amikor</em> beírom: <code>1F</code>, <em>akkor</em> a program kiírja, hogy tizenhatos számrendszerben van, és az eredmény tízesben <code>31</code>.</td>
+            <td>TC-06 – TC-08</td>
+        </tr>
+        <tr>
+            <td>US-03</td>
+            <td><em>Felhasználóként</em> szeretném tudni, ha a szám több számrendszerben is értelmezhető, <em>hogy</em> ne kapjak félrevezető eredményt.</td>
+            <td><em>Adott</em> az automatikus mód, <em>amikor</em> beírom: <code>101</code>, <em>akkor</em> mindhárom értelmezés (5, 101, 257) megjelenik, és a program javasolja az alap kiválasztását.</td>
+            <td>TC-03, TC-09 – TC-11, TC-29</td>
+        </tr>
+        <tr>
+            <td>US-04</td>
+            <td><em>Felhasználóként</em> érthető hibaüzenetet szeretnék hibás bemenetnél, <em>hogy</em> tudjam, mit rontottam el.</td>
+            <td><em>Adott</em> a „Kettes” forrás, <em>amikor</em> beírom: <code>102</code>, <em>akkor</em> az üzenet: „Ez nem kettes szám!”.</td>
+            <td>TC-01, TC-02, TC-12 – TC-17, TC-20, TC-30, TC-31</td>
+        </tr>
+        <tr>
+            <td>US-05</td>
+            <td><em>Felhasználóként</em> nem szeretnék pontatlan eredményt kapni nagyon nagy számoknál, <em>hogy</em> megbízhassak a kiírt értékben.</td>
+            <td><em>Adott</em> a „Tízes” forrás, <em>amikor</em> beírom: <code>9007199254740992</code>, <em>akkor</em> az eredmény helyén „túl nagy szám” áll.</td>
+            <td>TC-22 – TC-27</td>
+        </tr>
+        <tr>
+            <td>US-06</td>
+            <td><em>Tanulóként</em> szeretném lépésenként, állítható sebességgel látni a kód futását, <em>hogy</em> megértsem az algoritmust.</td>
+            <td><em>Adott</em> egy elindított átváltás, <em>amikor</em> megnyomom a Szünet, majd a Lépés gombot, <em>akkor</em> a kódnézet pontosan egy sorral lép tovább, és a változók panel frissül.</td>
+            <td>ST-01 – ST-18, MT-01 – MT-08</td>
+        </tr>
+    </table>
+
+    <h2 id="technikak">3. Alkalmazott teszttervezési technikák</h2>
+    <table>
+        <tr><th>Technika</th><th>Lényege</th><th>Hol szerepel</th><th>Forrás</th></tr>
+        <tr><td>Ekvivalencia-particionálás</td><td>A bemenetek olyan osztályokra bontása, amelyeken belül a program várhatóan azonosan viselkedik; osztályonként egy képviselő tesztelése.</td><td>4. fejezet</td><td>[1] 4.2.1, [2], [4]</td></tr>
+        <tr><td>Határérték-elemzés</td><td>A hibák gyakran az osztályok határán jelentkeznek, ezért a határon és közvetlenül mellette lévő értékek tesztelése.</td><td>5. fejezet</td><td>[1] 4.2.2, [2], [4]</td></tr>
+        <tr><td>Döntési tábla</td><td>A feltételek összes releváns kombinációjához tartozó elvárt kimenet táblázatos rögzítése.</td><td>6. fejezet</td><td>[1] 4.2.3, [5]</td></tr>
+        <tr><td>Állapotátmenet-tesztelés</td><td>A rendszer állapotainak, eseményeinek és átmeneteinek modellezése; minden érvényes átmenet lefedése (0-switch lefedettség), és az érvénytelen átmenetek vizsgálata.</td><td>8. fejezet</td><td>[1] 4.2.4, [3]</td></tr>
+        <tr><td>Hibasejtés (error guessing)</td><td>Tapasztalat alapján valószínű hibaforrások célzott kipróbálása (pl. <code>0x</code> előtag, szóköz a szám közepén, ékezetes betű).</td><td>TC-13 – TC-16, TC-30</td><td>[1] 4.4.1, [4]</td></tr>
+    </table>
+
+    <h2 id="ekvivalencia">4. Ekvivalencia-particionálás</h2>
+    <h3>4.1 A „Szám” mező (automatikus módban)</h3>
+    <table>
+        <tr><th>Osztály</th><th>Leírás</th><th>Érvényes?</th><th>Képviselő</th><th>Teszt</th></tr>
+        <tr><td>EP-1</td><td>Üres vagy csak szóközből álló bemenet</td><td>Érvénytelen</td><td><code>""</code>, <code>"   "</code></td><td>TC-01, TC-02</td></tr>
+        <tr><td>EP-2</td><td>Csak 0 és 1 számjegy (mindhárom alapban érvényes)</td><td>Érvényes</td><td><code>101</code></td><td>TC-03</td></tr>
+        <tr><td>EP-3</td><td>Számjegyek, legalább egy 2–9 (tízesben és tizenhatosban érvényes)</td><td>Érvényes</td><td><code>255</code></td><td>TC-09</td></tr>
+        <tr><td>EP-4</td><td>Legalább egy A–F betű (csak tizenhatosban érvényes)</td><td>Érvényes</td><td><code>1F</code></td><td>TC-06</td></tr>
+        <tr><td>EP-5</td><td>Kisbetűs hexadecimális jegyek</td><td>Érvényes (nagybetűsítés után)</td><td><code>1f</code></td><td>TC-07</td></tr>
+        <tr><td>EP-6</td><td>G–Z betű</td><td>Érvénytelen</td><td><code>G</code></td><td>TC-12</td></tr>
+        <tr><td>EP-7</td><td>Speciális karakter (<code>-</code>, <code>.</code>, <code>x</code>, belső szóköz)</td><td>Érvénytelen</td><td><code>-5</code>, <code>1.5</code>, <code>0x1F</code>, <code>1 F</code></td><td>TC-13 – TC-16</td></tr>
+        <tr><td>EP-8</td><td>Ékezetes betű</td><td>Érvénytelen</td><td><code>Á</code></td><td>TC-30</td></tr>
+    </table>
+
+    <h3>4.2 A „Milyen számrendszerben van?” menü</h3>
+    <table>
+        <tr><th>Osztály</th><th>Érték</th><th>Elvárt viselkedés</th><th>Teszt</th></tr>
+        <tr><td>EP-9</td><td>Döntse el magától (0)</td><td>Mindhárom alap vizsgálata</td><td>TC-03 – TC-16</td></tr>
+        <tr><td>EP-10</td><td>Kettes / Tízes / Tizenhatos</td><td>Csak a kiválasztott alap vizsgálata</td><td>TC-17 – TC-28, TC-31, TC-32</td></tr>
+    </table>
+
+    <h2 id="hatarertek">5. Határérték-elemzés</h2>
+    <h3>5.1 Biztonságos egész határ (<code>Number.MAX_SAFE_INTEGER</code> = 2<sup>53</sup> − 1)</h3>
+    <table>
+        <tr><th>Érték</th><th>Bemenet (alap)</th><th>Elvárt</th><th>Teszt</th></tr>
+        <tr><td>2<sup>53</sup> − 1 (határon belül)</td><td><code>9007199254740991</code> (10)</td><td><code>1FFFFFFFFFFFFF</code></td><td>TC-22</td></tr>
+        <tr><td>2<sup>53</sup> (határ fölött)</td><td><code>9007199254740992</code> (10)</td><td>túl nagy szám</td><td>TC-23</td></tr>
+        <tr><td>2<sup>53</sup> + 1</td><td><code>9007199254740993</code> (10)</td><td>túl nagy szám</td><td>TC-24</td></tr>
+        <tr><td>2<sup>53</sup> − 1 hexában</td><td><code>1FFFFFFFFFFFFF</code> (16)</td><td><code>9007199254740991</code></td><td>TC-25</td></tr>
+        <tr><td>2<sup>53</sup> hexában</td><td><code>20000000000000</code> (16)</td><td>túl nagy szám</td><td>TC-26</td></tr>
+    </table>
+
+    <h3>5.2 A beviteli mező hossza (<code>maxlength="24"</code>)</h3>
+    <table>
+        <tr><th>Eset</th><th>Bemenet</th><th>Elvárt</th><th>Teszt</th></tr>
+        <tr><td>0 karakter</td><td><code>""</code></td><td>Nem adtál meg számot!</td><td>TC-01</td></tr>
+        <tr><td>1 karakter</td><td><code>0</code>, <code>1</code></td><td>Helyes, egyértelmű eredmény</td><td>TC-04, TC-05</td></tr>
+        <tr><td>24 karakter (maximum), kettesben</td><td>24 db <code>1</code></td><td><code>16777215</code> (24 jegyű bináris szám sosem éri el a pontossági határt)</td><td>TC-28</td></tr>
+        <tr><td>25. karakter</td><td>gépelés a 24. után</td><td>A mező nem fogad el több karaktert</td><td>MT-07</td></tr>
+    </table>
+
+    <h2 id="dontesi">6. Döntési tábla (automatikus felismerés)</h2>
+    <p>Az <code>atvalt()</code> automatikus módjának kimenete két feltételtől függ: hány alapban érvényes a szám (<code>db</code>), és megegyeznek-e az eredmények (<code>egyforma</code>).</p>
+    <table>
+        <tr><th>Feltétel / Kimenet</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th></tr>
+        <tr><td><code>db = 0</code></td><td>I</td><td>N</td><td>N</td><td>N</td></tr>
+        <tr><td><code>db = 1</code></td><td>–</td><td>I</td><td>N</td><td>N</td></tr>
+        <tr><td><code>egyforma</code></td><td>–</td><td>–</td><td>I</td><td>N</td></tr>
+        <tr><td><em>Kimenet</em></td><td>„Ez nem kettes, tízes vagy tizenhatos szám!”</td><td>Felismert számrendszer + eredmény</td><td>Egyetlen eredmény</td><td>Minden értelmezés + javaslat</td></tr>
+        <tr><td><em>Teszt</em></td><td>TC-12</td><td>TC-06</td><td>TC-04</td><td>TC-03</td></tr>
+    </table>
+    <p>A „–” azt jelenti, hogy a feltétel értéke az adott oszlopban nem befolyásolja a kimenetet.</p>
+
+    <h2 id="funkcionalis">7. Automatizált funkcionális tesztesetek</h2>
+    <p>Az alábbi tesztesetek a valódi <code>script.js</code> <code>atvalt()</code> függvényének meghívásával futottak le. A „Tényleges eredmény” oszlop a függvény által kiírt szöveget tartalmazza (a <code>&lt;br&gt;</code> sortöréseket itt „ / ” jelöli).</p>
+    <table>
+        <tr><th>ID</th><th>Bemenet</th><th>Forrás</th><th>Cél</th><th>Tényleges eredmény</th><th>Státusz</th></tr>
+        <tr><td>TC-01</td><td><code>""</code></td><td>auto</td><td>10</td><td>Nem adtál meg számot!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-02</td><td><code>"   "</code></td><td>auto</td><td>10</td><td>Nem adtál meg számot!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-03</td><td><code>101</code></td><td>auto</td><td>10</td><td>Ez a szám több számrendszerben is lehet, tízes számrendszerben: / Ha kettes: 5 / Ha tízes: 101 / Ha tizenhatos: 257 / Ha tudod, melyik, válaszd ki fent!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-04</td><td><code>0</code></td><td>auto</td><td>10</td><td>Eredmény tízes számrendszerben: 0</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-05</td><td><code>1</code></td><td>auto</td><td>2</td><td>Eredmény kettes számrendszerben: 1</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-06</td><td><code>1F</code></td><td>auto</td><td>10</td><td>A megadott szám tizenhatos számrendszerben van. / Eredmény tízes számrendszerben: 31</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-07</td><td><code>1f</code></td><td>auto</td><td>10</td><td>A megadott szám tizenhatos számrendszerben van. / Eredmény tízes számrendszerben: 31</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-08</td><td><code>" 1F "</code></td><td>auto</td><td>10</td><td>A megadott szám tizenhatos számrendszerben van. / Eredmény tízes számrendszerben: 31</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-09</td><td><code>255</code></td><td>auto</td><td>16</td><td>… tizenhatos számrendszerben: / Ha tízes: FF / Ha tizenhatos: 255 / Ha tudod, melyik, válaszd ki fent!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-10</td><td><code>10</code></td><td>auto</td><td>2</td><td>… kettes számrendszerben: / Ha kettes: 10 / Ha tízes: 1010 / Ha tizenhatos: 10000 / …</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-11</td><td><code>10</code></td><td>auto</td><td>16</td><td>… tizenhatos számrendszerben: / Ha kettes: 2 / Ha tízes: A / Ha tizenhatos: 10 / …</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-12</td><td><code>G</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-13</td><td><code>0x1F</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-14</td><td><code>-5</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-15</td><td><code>1.5</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-16</td><td><code>1 F</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-17</td><td><code>102</code></td><td>2</td><td>10</td><td>Ez nem kettes szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-18</td><td><code>00101</code></td><td>2</td><td>10</td><td>Eredmény tízes számrendszerben: 5</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-19</td><td><code>FF</code></td><td>16</td><td>2</td><td>Eredmény kettes számrendszerben: 11111111</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-20</td><td><code>FF</code></td><td>10</td><td>2</td><td>Ez nem tízes szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-21</td><td><code>ABC</code></td><td>16</td><td>10</td><td>Eredmény tízes számrendszerben: 2748</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-22</td><td><code>9007199254740991</code></td><td>10</td><td>16</td><td>Eredmény tizenhatos számrendszerben: 1FFFFFFFFFFFFF</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-23</td><td><code>9007199254740992</code></td><td>10</td><td>16</td><td>Eredmény tizenhatos számrendszerben: túl nagy szám</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-24</td><td><code>9007199254740993</code></td><td>10</td><td>16</td><td>Eredmény tizenhatos számrendszerben: túl nagy szám</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-25</td><td><code>1FFFFFFFFFFFFF</code></td><td>16</td><td>10</td><td>Eredmény tízes számrendszerben: 9007199254740991</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-26</td><td><code>20000000000000</code></td><td>16</td><td>10</td><td>Eredmény tízes számrendszerben: túl nagy szám</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-27</td><td><code>FFFFFFFFFFFFFFFF</code></td><td>16</td><td>10</td><td>Eredmény tízes számrendszerben: túl nagy szám</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-28</td><td>24 db <code>1</code></td><td>2</td><td>10</td><td>Eredmény tízes számrendszerben: 16777215</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-29</td><td><code>9007199254740991</code></td><td>auto</td><td>10</td><td>… tízes számrendszerben: / Ha tízes: 9007199254740991 / Ha tizenhatos: túl nagy szám / …</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-30</td><td><code>Á</code></td><td>auto</td><td>10</td><td>Ez nem kettes, tízes vagy tizenhatos szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-31</td><td><code>12</code></td><td>2</td><td>10</td><td>Ez nem kettes szám!</td><td><span class="címke pass">PASS</span></td></tr>
+        <tr><td>TC-32</td><td><code>0</code></td><td>2</td><td>16</td><td>Eredmény tizenhatos számrendszerben: 0</td><td><span class="címke pass">PASS</span></td></tr>
+    </table>
+    <div class="megjegyzes">
+        <strong>Megfigyelés (TC-29):</strong> automatikus módban egy nagy tízes szám tizenhatos értelmezése túllépi a pontossági határt. A program ekkor is helyesen működik: a tízes értelmezést kiírja, a tizenhatosnál pedig „túl nagy szám” szerepel, és mivel a két eredmény eltér, kétértelműként jelenik meg.
+    </div>
+
+    <h2 id="allapotok">8. Állapotok, események, állapotátmenet-táblák</h2>
+
+    <h3>8.1 Az átváltás logikai állapotai</h3>
+    <table>
+        <tr><th>Állapot</th><th>Leírás</th></tr>
+        <tr><td><strong>VÁRAKOZÁS</strong></td><td>Az oldal betöltött, a felhasználó adatot ad meg.</td></tr>
+        <tr><td><strong>ELLENŐRZÉS</strong></td><td>Az <code>atvalt()</code> fut: beolvasás, <code>jo()</code> és <code>valt()</code> hívások.</td></tr>
+        <tr><td><strong>HIBA_ÜRES</strong></td><td>Nem adtak meg számot.</td></tr>
+        <tr><td><strong>HIBA_ÉRVÉNYTELEN</strong></td><td>A szám a kiválasztott vagy egyik alapban sem érvényes.</td></tr>
+        <tr><td><strong>SIKER</strong></td><td>Egyértelmű eredmény (fix alap, egy találat, vagy több egyforma találat).</td></tr>
+        <tr><td><strong>KÉTÉRTELMŰ</strong></td><td>Több, eltérő eredményű értelmezés.</td></tr>
+    </table>
+
     <pre class="mermaid">
-flowchart TD
-    %% Stílusok definiálása (Jelmagyarázat)
-    classDef state fill:#001100,stroke:#33ff00,stroke-width:2px,color:#33ff00;
-    classDef event fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
-    classDef action fill:#001100,stroke:#33ff00,stroke-width:2px,color:#fff;
-    classDef decision fill:#002200,stroke:#33ff00,stroke-width:2px,color:#33ff00;
-
-    %% --- ESEMÉNYEK ÉS INDULÁS ---
-    S_Idle((IDLE ÁLLAPOT<br>Várakozás felhasználóra)):::state
-    
-    E_Click>EVENT: Kattintás az Átváltás gombon]:::event
-    
-    S_Idle --> E_Click
-    
-    E_Click --> A_Read[ACTION: Adatok beolvasása a DOM-ból<br>szam, alap, cel]:::action
-    
-    %% --- ALAP LOGIKA ÉS VALIDÁCIÓ ---
-    A_Read --> D_Empty{Üres a bemenet?}:::decision
-    
-    D_Empty -- Igen --> S_Error_Empty((ERROR ÁLLAPOT<br>Nincs megadva szám)):::state
-    D_Empty -- Nem --> D_Base{Felhasználó fix alapot<br>választott a legördülőből?}:::decision
-    
-    %% --- FIX ALAP (EGYÉRTELMŰ) ÁG ---
-    D_Base -- Igen --> A_Jo_1[ACTION: jo függvény<br>Karakterenkénti vizsgálat]:::action
-    A_Jo_1 --> D_Valid_1{Karakterek érvényesek<br>az adott alapban?}:::decision
-    D_Valid_1 -- Nem --> S_Error_Format((ERROR ÁLLAPOT<br>Helytelen formátum)):::state
-    D_Valid_1 -- Igen --> A_Valt_1[ACTION: valt konverzió<br>parseInt és toString]:::action
-    A_Valt_1 --> S_Success_1((SUCCESS ÁLLAPOT<br>Eredmény kiírása)):::state
-
-    %% --- AUTO ALAP (KÉTÉRTELMŰSÉG) ÁG ---
-    D_Base -- Nem --> A_Loop[ACTION: Ciklus indítása<br>az 2, 10, 16 alapokon]:::action
-    A_Loop --> A_Jo_2[ACTION: jo függvény futtatása<br>mind a 3 számrendszerre]:::action
-    A_Jo_2 --> A_Valt_2[ACTION: valt konverzió futtatása<br>csak az érvényes találatokra]:::action
-    
-    A_Valt_2 --> D_Count{Hány számrendszerben<br>volt érvényes a szám?}:::decision
-    
-    D_Count -- 0 db --> S_Error_None((ERROR ÁLLAPOT<br>Egyik rendszerbe sem illik)):::state
-    D_Count -- 1 db --> S_Success_2((SUCCESS ÁLLAPOT<br>Egyértelmű eredmény kiírása)):::state
-    D_Count -- 2-3 db<br>de mind ugyanazt adja ki --> S_Success_3((SUCCESS ÁLLAPOT<br>Egyértelmű eredmény kiírása)):::state
-    D_Count -- 2-3 db<br>különböző értékekkel --> S_Ambiguous((AMBIGUOUS ÁLLAPOT<br>Kétértelműség Minden<br>lehetséges verzió kiírása)):::state
-    
-    %% --- VISSZATÉRÉS AZ ALAPÁLLAPOTBA ---
-    S_Error_Empty -.-> S_Idle
-    S_Error_Format -.-> S_Idle
-    S_Error_None -.-> S_Idle
-    S_Success_1 -.-> S_Idle
-    S_Success_2 -.-> S_Idle
-    S_Success_3 -.-> S_Idle
-    S_Ambiguous -.-> S_Idle
+stateDiagram-v2
+    state "VÁRAKOZÁS" as VAR
+    state "ELLENŐRZÉS" as ELL
+    state "HIBA_ÜRES" as URES
+    state "HIBA_ÉRVÉNYTELEN" as ERV
+    state "SIKER" as OK
+    state "KÉTÉRTELMŰ" as KET
+    [*] --> VAR
+    VAR --> ELL : Átváltás gomb vagy Enter
+    ELL --> URES : üres bemenet
+    ELL --> ERV : jo() hamis, vagy db = 0
+    ELL --> OK : jo() igaz, db = 1, vagy egyforma
+    ELL --> KET : több eltérő eredmény
+    URES --> VAR : bemenet módosítása
+    ERV --> VAR : bemenet módosítása
+    OK --> VAR : bemenet módosítása
+    KET --> VAR : forrás alap kiválasztása
     </pre>
 
     <table>
-        <tr>
-            <th>Események (Events / Triggers)</th>
-            <th>Leírás</th>
-        </tr>
-        <tr>
-            <td><code>onClick (gomb)</code></td>
-            <td>A felhasználó rákattint az "Átváltás" gombra. Megszakítja az IDLE állapotot.</td>
-        </tr>
-        <tr>
-            <td><code>onKeyDown (Enter)</code></td>
-            <td>A felhasználó a szövegmezőben megnyomja az Entert (Submit).</td>
-        </tr>
+        <tr><th>Jelenlegi állapot</th><th>Esemény / feltétel</th><th>Következő állapot</th><th>Teszt</th></tr>
+        <tr><td>VÁRAKOZÁS</td><td>Átváltás gomb / Enter</td><td>ELLENŐRZÉS</td><td>MT-01, MT-02</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>üres bemenet</td><td>HIBA_ÜRES</td><td>TC-01, TC-02</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>fix alap, <code>jo()</code> hamis</td><td>HIBA_ÉRVÉNYTELEN</td><td>TC-17, TC-20</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>automatikus, <code>db = 0</code></td><td>HIBA_ÉRVÉNYTELEN</td><td>TC-12</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>fix alap, <code>jo()</code> igaz</td><td>SIKER</td><td>TC-19</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>automatikus, <code>db = 1</code></td><td>SIKER</td><td>TC-06</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>automatikus, <code>db &gt; 1</code>, egyforma</td><td>SIKER</td><td>TC-04</td></tr>
+        <tr><td>ELLENŐRZÉS</td><td>automatikus, <code>db &gt; 1</code>, eltérő</td><td>KÉTÉRTELMŰ</td><td>TC-03</td></tr>
+        <tr><td>KÉTÉRTELMŰ</td><td>forrás alap kiválasztása, új Átváltás</td><td>ELLENŐRZÉS → SIKER</td><td>MT-03</td></tr>
+    </table>
+
+    <h3>8.2 A lejátszó állapotai és eseményei</h3>
+    <p>A lejátszás állapotát a <code>megjelenites.js</code> három változója határozza meg: <code>lepesek</code> (van-e felvétel), <code>fut</code> és <code>aktualis</code> (hányadik lépésnél tart).</p>
+    <table>
+        <tr><th>Állapot</th><th>Feltétel a kódban</th><th>Gomb felirata</th></tr>
+        <tr><td><strong>KEZDŐ</strong></td><td><code>lepesek.length == 0</code></td><td>▶ Lejátszás</td></tr>
+        <tr><td><strong>FUT</strong></td><td><code>fut == true</code></td><td>⏸ Szünet</td></tr>
+        <tr><td><strong>SZÜNET</strong></td><td><code>fut == false</code> és <code>aktualis &lt; lepesek.length</code></td><td>▶ Folytatás</td></tr>
+        <tr><td><strong>VÉGE</strong></td><td><code>aktualis &gt;= lepesek.length</code></td><td>↻ Újra</td></tr>
     </table>
 
     <table>
-        <tr>
-            <th>Állapotok (States)</th>
-            <th>Kiváltó ok / Működés</th>
-        </tr>
-        <tr>
-            <td><strong>IDLE</strong> (Várakozás)</td>
-            <td>Az oldal betöltött, vár a felhasználói interakcióra.</td>
-        </tr>
-        <tr>
-            <td><strong>VALIDATING</strong> (Ellenőrzés)</td>
-            <td>Az Input feldolgozása zajlik (a karakterek `for` ciklusos regex/if vizsgálata).</td>
-        </tr>
-        <tr>
-            <td><strong>AMBIGUOUS</strong> (Kétértelmű)</td>
-            <td>A bemenet több alapra is érvényes (pl. `101`), és a rendszer mindhárom lehetséges konverziót megjeleníti.</td>
-        </tr>
-        <tr>
-            <td><strong>ERROR</strong> (Hiba)</td>
-            <td>A bemenet üres, vagy helytelen karaktert tartalmaz (pl. `1G`).</td>
-        </tr>
-        <tr>
-            <td><strong>SUCCESS</strong> (Siker)</td>
-            <td>Sikeres konverzió (vagy fixen megadott alappal, vagy egyértelmű felismeréssel).</td>
-        </tr>
+        <tr><th>Esemény</th><th>Kiváltó</th><th>Függvény</th></tr>
+        <tr><td>E1</td><td>Átváltás gomb vagy Enter</td><td><code>inditas()</code></td></tr>
+        <tr><td>E2</td><td>Lejátszás / Szünet / Folytatás / Újra gomb</td><td><code>lejatszasValt()</code></td></tr>
+        <tr><td>E3</td><td>Lépés gomb</td><td><code>egyLepes()</code></td></tr>
+        <tr><td>E4</td><td>Végére gomb</td><td><code>vegere()</code></td></tr>
+        <tr><td>E5</td><td>Időzítő lejár (<code>setTimeout</code>)</td><td><code>ciklus()</code></td></tr>
     </table>
 
-    <h3>Állapotátmeneti tábla (State Transition Table)</h3>
+    <pre class="mermaid">
+stateDiagram-v2
+    state "KEZDŐ" as K
+    state "FUT" as F
+    state "SZÜNET" as SZ
+    state "VÉGE" as V
+    [*] --> K
+    K --> F : E1 vagy E2
+    K --> SZ : E3
+    K --> V : E4
+    F --> F : E1 új felvétel, vagy E5 nem utolsó lépés
+    F --> SZ : E2 vagy E3
+    F --> V : E4, vagy E5 utolsó lépés után
+    SZ --> F : E1 vagy E2
+    SZ --> SZ : E3 nem utolsó lépés
+    SZ --> V : E3 utolsó lépés, vagy E4
+    V --> F : E1, vagy E2 újrakezdés
+    V --> SZ : E3 újrakezdés egy lépéssel
+    V --> V : E4
+    </pre>
+
+    <h3>8.3 Állapotátmenet-tábla (állapot × esemény)</h3>
     <table>
-        <tr>
-            <th>Aktuális állapot (Current)</th>
-            <th>Esemény / Feltétel (Trigger)</th>
-            <th>Új állapot (Next State)</th>
-            <th>Akció (Action)</th>
-        </tr>
-        <tr>
-            <td><code>IDLE</code></td>
-            <td>Átváltás gomb + Input mező üres</td>
-            <td><code>ERROR</code></td>
-            <td>Hibaüzenet: "Írj be egy számot!"</td>
-        </tr>
-        <tr>
-            <td><code>IDLE</code></td>
-            <td>Átváltás gomb + Input megadva</td>
-            <td><code>VALIDATING</code></td>
-            <td><code>jo()</code> függvény elindítása</td>
-        </tr>
-        <tr>
-            <td><code>VALIDATING</code></td>
-            <td>Karakterek érvénytelenek (pl. 1G)</td>
-            <td><code>ERROR</code></td>
-            <td>Hibaüzenet (Érvénytelen formátum)</td>
-        </tr>
-        <tr>
-            <td><code>VALIDATING</code></td>
-            <td>Érvényes (Auto mód, több egyezés)</td>
-            <td><code>AMBIGUOUS</code></td>
-            <td>Minden opció konvertálása <code>valt()</code>-tal</td>
-        </tr>
-        <tr>
-            <td><code>VALIDATING</code></td>
-            <td>Érvényes (Fix alap vagy 1 egyezés)</td>
-            <td><code>SUCCESS</code></td>
-            <td>Konvertálás <code>valt()</code>-tal és kirajzolás</td>
-        </tr>
-        <tr>
-            <td><code>ERROR</code> / <code>SUCCESS</code> / <code>AMBIGUOUS</code></td>
-            <td>Átváltás gomb (Új próbálkozás)</td>
-            <td><code>VALIDATING</code></td>
-            <td>Korábbi elemek törlése, új ciklus kezdése</td>
-        </tr>
+        <tr><th>Állapot \ Esemény</th><th>E1 Átváltás</th><th>E2 Lejátszás gomb</th><th>E3 Lépés</th><th>E4 Végére</th><th>E5 Időzítő</th></tr>
+        <tr><td><strong>KEZDŐ</strong></td><td>FUT<br><small>felvétel + indítás</small></td><td>FUT<br><small>felvétel + indítás</small></td><td>SZÜNET<br><small>felvétel + 1 lépés</small></td><td>VÉGE<br><small>felvétel + összes lépés</small></td><td><em>nem fordulhat elő</em></td></tr>
+        <tr><td><strong>FUT</strong></td><td>FUT<br><small>új felvétel, újraindul</small></td><td>SZÜNET</td><td>SZÜNET<br><small>+1 lépés</small></td><td>VÉGE</td><td>FUT (következő lépés)<br>VÉGE (utolsó után)</td></tr>
+        <tr><td><strong>SZÜNET</strong></td><td>FUT<br><small>új felvétel</small></td><td>FUT</td><td>SZÜNET (+1 lépés)<br>VÉGE (utolsó lépésnél)</td><td>VÉGE</td><td><em>nem fordulhat elő</em></td></tr>
+        <tr><td><strong>VÉGE</strong></td><td>FUT<br><small>új felvétel</small></td><td>FUT<br><small>visszaállítás, újra</small></td><td>SZÜNET<br><small>visszaállítás + 1 lépés</small></td><td>VÉGE</td><td><em>nem fordulhat elő</em></td></tr>
+    </table>
+    <p><strong>Érvénytelen átmenetek:</strong> az E5 esemény csak FUT állapotban fordulhat elő, mert minden olyan függvény, amely a FUT állapotot elhagyja (<code>lejatszasValt()</code> szüneteltetéskor, <code>egyLepes()</code>, <code>vegere()</code>, <code>felvesz()</code>), meghívja a <code>clearTimeout()</code>-ot. Ezt az ST-17 és ST-18 teszt ellenőrzi.</p>
+
+    <h3>8.4 Állapotátmenet-tesztek (0-switch lefedettség)</h3>
+    <p>Minden érvényes átmenethez egy teszteset tartozik. Végrehajtás: manuálisan, a böngészőben, a <code>101</code> bemenettel és automatikus móddal. A státusz oszlop a végrehajtás után töltendő ki.</p>
+    <table>
+        <tr><th>ID</th><th>Kiinduló állapot</th><th>Esemény</th><th>Elvárt állapot és megfigyelhető jel</th><th>Státusz</th></tr>
+        <tr><td>ST-01</td><td>KEZDŐ (friss betöltés)</td><td>E1</td><td>FUT – a sorok kiemelése halad, gomb: „⏸ Szünet”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-02</td><td>KEZDŐ</td><td>E2</td><td>FUT – ugyanaz, mint ST-01</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-03</td><td>KEZDŐ</td><td>E3</td><td>SZÜNET – az 1. lépés látszik, számláló: „1 / N lépés”, gomb: „▶ Folytatás”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-04</td><td>KEZDŐ</td><td>E4</td><td>VÉGE – az eredmény megjelenik, gomb: „↻ Újra”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-05</td><td>FUT</td><td>E1</td><td>FUT – a lejátszás elölről indul</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-06</td><td>FUT</td><td>E2</td><td>SZÜNET – a kiemelés megáll, gomb: „▶ Folytatás”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-07</td><td>FUT</td><td>E3</td><td>SZÜNET – pontosan egy lépéssel halad tovább, majd megáll</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-08</td><td>FUT</td><td>E4</td><td>VÉGE – azonnal megjelenik a végeredmény</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-09</td><td>FUT</td><td>E5 (várakozás a végéig)</td><td>VÉGE – az utolsó lépés után megjelenik a végeredmény, gomb: „↻ Újra”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-10</td><td>SZÜNET</td><td>E1</td><td>FUT – új felvétel, elölről indul</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-11</td><td>SZÜNET</td><td>E2</td><td>FUT – onnan folytatja, ahol megállt</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-12</td><td>SZÜNET</td><td>E3</td><td>SZÜNET – a számláló pontosan eggyel nő</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-13</td><td>SZÜNET</td><td>E4</td><td>VÉGE</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-14</td><td>VÉGE</td><td>E2</td><td>FUT – a kiemelések törlődnek, a lejátszás elölről indul</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-15</td><td>VÉGE</td><td>E3</td><td>SZÜNET – számláló: „1 / N lépés”</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-16</td><td>VÉGE</td><td>E4</td><td>VÉGE – nincs változás, nincs hiba</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-17</td><td>FUT</td><td>E2, majd 3 mp várakozás</td><td>SZÜNET marad – a lejátszás nem lép tovább magától (nincs „szellem” időzítő)</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>ST-18</td><td>FUT</td><td>E2 gyors, többszöri nyomkodása</td><td>A lejátszás nem gyorsul fel, mindig legfeljebb egy időzítő fut</td><td>☐ PASS ☐ FAIL</td></tr>
     </table>
 
-    <h2>3. Funkcionális Tesztesetek (Test Cases)</h2>
-    
-    <div class="teszteset">
-        <h4>TC-01: Kétértelműség (Ambiguity) tesztelése <span class="címke pass">PASS</span></h4>
-        <p><strong>Bemenet:</strong> <code>101</code> (Auto mód)</p>
-        <p><strong>Elvárt eredmény:</strong> A rendszer AMBIGUOUS állapotba lép, mivel a 101 lehet kettes (5), tízes (101) és tizenhatos (257) számrendszerben is. Mindhárom eredmény megjelenik.</p>
-        <p><strong>Tényleges eredmény:</strong> Mindhárom lehetőség helyesen jelenik meg.</p>
-    </div>
+    <h2 id="manualis">9. Manuális felülettesztek</h2>
+    <table>
+        <tr><th>ID</th><th>Lépések</th><th>Elvárt eredmény</th><th>Státusz</th></tr>
+        <tr><td>MT-01</td><td>Beírni: <code>1F</code>, megnyomni az Átváltás gombot.</td><td>Elindul a lejátszás, a tábla tizenhatos sora zöld pipákat kap, a kettes és tízes sor piros X-et az első hibás karakternél.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-02</td><td>Beírni: <code>1F</code>, Entert nyomni.</td><td>Ugyanaz, mint MT-01.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-03</td><td>Beírni: <code>101</code>, forrás: „Kettes”, cél: „Tízes”, Átváltás.</td><td>Eredmény: 5. A táblában csak a kettes sor jelenik meg.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-04</td><td>Lejátszás közben a sebesség csúszkát 1-re, majd 10-re állítani.</td><td>A lejátszás láthatóan lelassul, majd felgyorsul, újraindítás nélkül.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-05</td><td>Szünet állapotban a Lépés gombot többször megnyomni.</td><td>Minden nyomásra pontosan egy sor emelkedik ki, a megváltozott változó kiemelést kap.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-06</td><td>Hosszú bemenetnél figyelni a kódnézetet lejátszás közben.</td><td>Ha a futó sor kilóg a látható részből, a kódnézet magától odagörget.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-07</td><td>25 karaktert próbálni beírni a mezőbe.</td><td>A 24. karakter után a mező nem fogad el több karaktert.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-08</td><td>Az ablakot keskenyre (mobil szélességre) húzni.</td><td>A kódnézet az átváltó alá kerül, semmi nem lóg ki vízszintesen.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-09</td><td>Megnyitni a Dokumentáció és a Tesztesetek oldalt.</td><td>Minden ábra kirajzolódik, nincs „Syntax error” üzenet.</td><td>☐ PASS ☐ FAIL</td></tr>
+        <tr><td>MT-10</td><td><code>101</code> lejátszása a végéig, majd a mezőt átírni <code>1F</code>-re Átváltás <em>nélkül</em>, és a Lépés gombot megnyomni.</td><td>Elvárt: a program az új számmal dolgozik, vagy jelzi, hogy új Átváltás szükséges. <em>Várhatóan FAIL, lásd BUG-03.</em></td><td>☐ PASS ☐ FAIL</td></tr>
+    </table>
+
+    <h2 id="hibak">10. Hibajegyek</h2>
 
     <div class="teszteset">
-        <h4>TC-02: Tiszta Hexadecimális bemenet <span class="címke pass">PASS</span></h4>
-        <p><strong>Bemenet:</strong> <code>1F</code> (Auto mód)</p>
-        <p><strong>Elvárt eredmény:</strong> Csak a 16-os számrendszerű vizsgálat fut le sikeresen. Decimális: 31, Bináris: 11111.</p>
-        <p><strong>Tényleges eredmény:</strong> Helyesen felismeri, kettes és tízes alapként automatikusan elveti.</p>
+        <h4>BUG-01: A dokumentáció ábrája nem jelent meg <span class="címke fixed">JAVÍTVA</span></h4>
+        <table>
+            <tr><td><strong>Súlyosság</strong></td><td>Közepes</td></tr>
+            <tr><td><strong>Lépések</strong></td><td>A dokumentációs oldal megnyitása.</td></tr>
+            <tr><td><strong>Tapasztalt</strong></td><td>A folyamatábra helyén üres terület vagy összefolyt szöveg jelent meg.</td></tr>
+            <tr><td><strong>Ok</strong></td><td>Az ábra kódja <code>&lt;div class="mermaid"&gt;</code> elemben volt. A böngésző a tartalmat HTML-ként értelmezte, így a nyilakban lévő <code>&gt;</code> jelek és a szöveg egy része elveszett, mielőtt a Mermaid feldolgozta volna.</td></tr>
+            <tr><td><strong>Javítás</strong></td><td>Az ábrák <code>&lt;pre class="mermaid"&gt;</code> elembe kerültek, ahol a tartalom szöveg marad. [10]</td></tr>
+            <tr><td><strong>Ellenőrzés</strong></td><td>MT-09</td></tr>
+        </table>
     </div>
 
     <div class="teszteset">
-        <h4>TC-03: Érvénytelen karakter bevitele (Edge Case) <span class="címke pass">PASS</span></h4>
-        <p><strong>Bemenet:</strong> <code>1G3</code> (Hexadecimális módba kényszerítve)</p>
-        <p><strong>Elvárt eredmény:</strong> A G karakter miatt ERROR állapot, hibaüzenet megjelenítése ("Nem érvényes karakter").</p>
-        <p><strong>Tényleges eredmény:</strong> A <code>jo()</code> függvény <code>false</code> értékkel tér vissza, hibaüzenet megjelenik.</p>
+        <h4>BUG-02: „Syntax error in text” az állapotgép ábráján <span class="címke fixed">JAVÍTVA</span></h4>
+        <table>
+            <tr><td><strong>Súlyosság</strong></td><td>Közepes</td></tr>
+            <tr><td><strong>Lépések</strong></td><td>A tesztdokumentáció megnyitása.</td></tr>
+            <tr><td><strong>Tapasztalt</strong></td><td>Az ábra helyén a Mermaid hibaüzenete: <em>Parse error on line 16: … A_Jo_1[ACTION: jo() futtatása] …</em></td></tr>
+            <tr><td><strong>Ok</strong></td><td>A csomópontok feliratában idézőjel nélküli zárójel szerepelt (<code>jo()</code>). A Mermaid a zárójelet alakzatjelölőként (pl. kerek doboz) értelmezi, ezért a felirat közepén hibát jelzett.</td></tr>
+            <tr><td><strong>Javítás</strong></td><td>A zárójelet tartalmazó feliratok idézőjelek közé kerültek: <code>A_Jo_1["ACTION: jo() futtatása"]</code>. [10]</td></tr>
+            <tr><td><strong>Ellenőrzés</strong></td><td>MT-09</td></tr>
+        </table>
     </div>
 
-    <h2>4. Bugok és Defektek (Javított hibák)</h2>
-    
-    <div class="teszteset bug">
-        <h4>BUG-01: A vizualizációs jelvények kilógnak mobil nézetben <span class="címke fixed">FIXED</span></h4>
-        <p><strong>Leírás:</strong> Szűk képernyőn a "Karakterek vizsgálata" dobozban a "✔ érvényes" jelvények jobb széle levágásra került (Overflow issue).</p>
-        <p><strong>Megoldás (Fix):</strong> A CSS-ben a <code>.jelveny</code> osztály megkapta a <code>flex-shrink: 0;</code> szabályt, így a Flexbox nem nyomja össze a tartalmat.</p>
+    <div class="teszteset">
+        <h4>BUG-03: A felvétel nem követi a bemenet változását <span class="címke fail">NYITOTT</span></h4>
+        <table>
+            <tr><td><strong>Súlyosság</strong></td><td>Alacsony (csak a vizualizációt érinti, az átváltás eredményét nem)</td></tr>
+            <tr><td><strong>Prioritás</strong></td><td>Közepes</td></tr>
+            <tr><td><strong>Lépések</strong></td><td>1. Beírni: <code>101</code>, Átváltás, megvárni a végét. 2. A mezőt átírni <code>1F</code>-re. 3. Átváltás helyett a Lépés vagy az Újra gombot megnyomni.</td></tr>
+            <tr><td><strong>Elvárt</strong></td><td>Az új számhoz tartozó futás, vagy figyelmeztetés, hogy új Átváltás kell.</td></tr>
+            <tr><td><strong>Tapasztalt</strong></td><td>A tábla már az <code>1F</code> karaktereivel épül fel, a lejátszott lépések és az eredmény viszont még a <code>101</code>-hez tartoznak.</td></tr>
+            <tr><td><strong>Ok</strong></td><td>A <code>visszaallit()</code> a táblát mindig a mező aktuális tartalmából építi újra, a <code>lepesek</code> tömb viszont csak az <code>inditas()</code> / <code>felvesz()</code> hívásakor frissül.</td></tr>
+            <tr><td><strong>Javaslat</strong></td><td>A szám mező és a menük <code>input</code> / <code>change</code> eseményére a <code>lepesek</code> tömb ürítése, így a következő gombnyomás új felvételt készít.</td></tr>
+            <tr><td><strong>Ellenőrzés</strong></td><td>MT-10</td></tr>
+        </table>
     </div>
 
-    <div class="teszteset bug">
-        <h4>BUG-02: Túlcsordulás nagy számoknál (Float Precision Loss) <span class="címke fixed">FIXED</span></h4>
-        <p><strong>Leírás:</strong> A JavaScript a számokat lebegőpontosan tárolja (Double-precision floating-point). 16 karakternél hosszabb számok konverziójakor csendes adatvesztés történt, az utolsó számjegyek nullázódtak (pl. 9999999999999999).</p>
-        <p><strong>Megoldás (Fix):</strong> Beépítésre került egy <code>Number.MAX_SAFE_INTEGER</code> validáció az átváltó függvénybe. Túl nagy szám esetén a konverzió leáll, és hibaüzenetet ad a pontatlanság elkerülése végett.</p>
-    </div>
+    <h2 id="osszesites">11. Összesítés</h2>
+    <table>
+        <tr><th>Tesztcsoport</th><th>Darab</th><th>Végrehajtás</th><th>Eredmény</th></tr>
+        <tr><td>Automatizált funkcionális (TC)</td><td>32</td><td>Automatizált</td><td>32 PASS</td></tr>
+        <tr><td>Állapotátmenet (ST)</td><td>18</td><td>Manuális</td><td>a protokoll szerint</td></tr>
+        <tr><td>Felület (MT)</td><td>10</td><td>Manuális</td><td>a protokoll szerint</td></tr>
+        <tr><td>Hibajegyek</td><td>3</td><td>–</td><td>2 javítva, 1 nyitott (alacsony súlyosság)</td></tr>
+    </table>
+    <p>A kilépési feltétel szempontjából a nyitott BUG-03 nem akadály, mert alacsony súlyosságú és az átváltás helyességét nem érinti.</p>
 
-    <div class="teszteset bug">
-        <h4>BUG-03: DOM Parsing hiba a Mermaid diagramnál <span class="címke fixed">FIXED</span></h4>
-        <p><strong>Leírás:</strong> A HTML dokumentációba ágyazott logikai ábra nem jelent meg, mert az állapotgép kódjában lévő nyíl (<code>&gt;</code>) HTML lezáró tag-ként lett értelmezve a <code>&lt;div&gt;</code> elemen belül.</p>
-        <p><strong>Megoldás (Fix):</strong> A befogadó elemet <code>&lt;pre&gt;</code> HTML elemre cseréltük, ami nyers szövegként adja át a kódot a Mermaid.js rajzolómotornak.</p>
+    <div class="forrasok" id="tforrasok">
+        <h3>12. Források</h3>
+        <ol>
+            <li>ISTQB: <em>Certified Tester Foundation Level Syllabus v4.0</em>, 2023. 4.2 fejezet (Black-Box Test Techniques) és 4.4.1 (Error Guessing). <a href="https://www.istqb.org/" target="_blank">istqb.org</a>, fogalmak: <a href="https://glossary.istqb.org/" target="_blank">ISTQB Glossary</a></li>
+            <li><a href="https://www.guru99.com/equivalence-partitioning-boundary-value-analysis.html" target="_blank">Equivalence Partitioning and Boundary Value Analysis (Guru99)</a></li>
+            <li><a href="https://www.guru99.com/state-transition-testing.html" target="_blank">State Transition Testing (Guru99)</a></li>
+            <li>Myers, G. J., Sandler, C., Badgett, T.: <em>The Art of Software Testing</em>, 3. kiadás, Wiley, 2011. 4. fejezet: Test-Case Design.</li>
+            <li><a href="https://www.guru99.com/decision-table-testing.html" target="_blank">Decision Table Testing (Guru99)</a></li>
+            <li><a href="https://www.atlassian.com/agile/project-management/epics" target="_blank">Epics (Atlassian Agile Coach)</a></li>
+            <li><a href="https://www.atlassian.com/agile/project-management/user-stories" target="_blank">User stories with examples and a template (Atlassian Agile Coach)</a></li>
+            <li><a href="https://cucumber.io/docs/gherkin/reference/" target="_blank">Gherkin Reference – Given / When / Then (Cucumber)</a></li>
+            <li><a href="https://martinfowler.com/articles/mocksArentStubs.html" target="_blank">Fowler, M.: Mocks Aren't Stubs</a></li>
+            <li><a href="https://mermaid.js.org/syntax/stateDiagram.html" target="_blank">Mermaid – State diagrams</a>, <a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank">Flowcharts</a></li>
+            <li>ISO/IEC/IEEE 29119-3:2021 – Software and systems engineering – Software testing – Part 3: Test documentation (a tesztesetek és hibajegyek szerkezetének mintája).</li>
+        </ol>
     </div>
-
-    <div class="forrasok">
-        <h3>Felhasznált források (QA és Tesztelés)</h3>
-        <ul>
-            <li><a href="https://www.atlassian.com/agile/project-management/epics-stories-themes" target="_blank">Agilis keretrendszer: Epicek és User Story-k (Atlassian Agile Coach)</a></li>
-            <li><a href="https://www.guru99.com/state-transition-testing.html" target="_blank">Állapotátmeneti tesztelés (State Transition Testing) technikája (Guru99)</a></li>
-            <li><a href="https://martinfowler.com/articles/micro-frontends.html" target="_blank">Eseményvezérelt állapotgépek a kliens oldalon (Martin Fowler blog)</a></li>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Cross_browser_testing/JavaScript" target="_blank">JavaScript tesztelési alapelvek és best practice-ek (MDN Web Docs)</a></li>
-            <li><a href="https://www.istqb.org/certifications/certified-tester-foundation-level" target="_blank">Szoftvertesztelési alapfogalmak (ISTQB Foundation Level Syllabus)</a></li>
-        </ul>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
 
     <footer>
-        Számrendszer Átváltó - Szoftvertesztelés (Szofteszt) Dokumentáció - <strong>v1.1.0</strong><br>
-        <span style="opacity: 0.7;">(Dizájn megjegyzés: A 3D Retro CRT vizuális megjelenés külső CSS template alapján lett implementálva.)</span>
+        Számrendszer Átváltó - Szoftvertesztelési dokumentáció - <strong>v1.1.0</strong>
     </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        background: "#1e1e1e",
+        primaryColor: "#2d2d2d",
+        primaryTextColor: "#e0e0e0",
+        primaryBorderColor: "#64ffda",
+        lineColor: "#888888",
+        secondaryColor: "#1e1e1e",
+        tertiaryColor: "#121212",
+        labelBackgroundColor: "#1e1e1e",
+        fontFamily: "Inter, sans-serif"
+    }
+});
+</script>
 </body>
 </html>
