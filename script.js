@@ -1,30 +1,27 @@
 function nev(alap) {
     if (alap == 2) {
         return "kettes";
-    } else if (alap == 10) {
-        return "tízes";
-    } else {
-        return "tizenhatos";
     }
+    if (alap == 10) {
+        return "tízes";
+    }
+    return "tizenhatos";
 }
 
 function jo(szam, alap) {
     for (var i = 0; i < szam.length; i++) {
-        var c = szam[i];
+        var karakter = szam[i];
 
-        if (alap == 2 && c != "0" && c != "1") {
+        if (alap == 2 && karakter != "0" && karakter != "1") {
             return false;
         }
-
-        if (alap == 10 && (c < "0" || c > "9")) {
+        if (alap == 10 && (karakter < "0" || karakter > "9")) {
             return false;
         }
-
-        if (alap == 16 && !((c >= "0" && c <= "9") || (c >= "A" && c <= "F"))) {
+        if (alap == 16 && !((karakter >= "0" && karakter <= "9") || (karakter >= "A" && karakter <= "F"))) {
             return false;
         }
     }
-
     return true;
 }
 
@@ -37,59 +34,65 @@ function valt(szam, alap, cel) {
 }
 
 function atvalt() {
-    var szam = document.getElementById("szam").value;
+    var szam = document.getElementById("szam").value.trim().toUpperCase();
     var alap = parseInt(document.getElementById("alap").value);
     var cel = parseInt(document.getElementById("cel").value);
     var eredmeny = document.getElementById("eredmeny");
 
-    szam = szam.trim().toUpperCase();
-
     if (szam == "") {
-        eredmeny.innerHTML = "Nem adtál meg számot!";
+        eredmeny.textContent = "Nem adtál meg számot!";
         return;
     }
 
     if (alap != 0) {
-        if (jo(szam, alap)) {
-            eredmeny.innerHTML = "Eredmény " + nev(cel) + " számrendszerben: " + valt(szam, alap, cel);
-        } else {
-            eredmeny.innerHTML = "Ez nem " + nev(alap) + " szám!";
+        if (!jo(szam, alap)) {
+            eredmeny.textContent = "Ez nem " + nev(alap) + " szám!";
+            return;
         }
+        eredmeny.textContent = "Eredmény " + nev(cel) + " számrendszerben: " + valt(szam, alap, cel);
         return;
     }
 
     var alapok = [2, 10, 16];
-    var db = 0;
-    var szoveg = "";
-    var elso = "";
-    var egyforma = true;
-    var talalt = 0;
+    var eredmenyek = [];
 
     for (var i = 0; i < alapok.length; i++) {
         if (jo(szam, alapok[i])) {
-            var uj = valt(szam, alapok[i], cel);
-
-            if (db == 0) {
-                elso = uj;
-                talalt = alapok[i];
-            } else if (uj != elso) {
-                egyforma = false;
-            }
-
-            db++;
-            szoveg = szoveg + "Ha " + nev(alapok[i]) + ": " + uj + "<br>";
+            eredmenyek.push({
+                alap: alapok[i],
+                ertek: valt(szam, alapok[i], cel)
+            });
         }
     }
 
-    if (db == 0) {
-        eredmeny.innerHTML = "Ez nem kettes, tízes vagy tizenhatos szám!";
-    } else if (db == 1) {
-        eredmeny.innerHTML = "A megadott szám " + nev(talalt) + " számrendszerben van.<br>"
-            + "Eredmény " + nev(cel) + " számrendszerben: " + elso;
-    } else if (egyforma) {
-        eredmeny.innerHTML = "Eredmény " + nev(cel) + " számrendszerben: " + elso;
+    if (eredmenyek.length == 0) {
+        eredmeny.textContent = "Ez nem kettes, tízes vagy tizenhatos szám!";
+    } else if (eredmenyek.length == 1) {
+        eredmeny.textContent = "A megadott szám " + nev(eredmenyek[0].alap) + " számrendszerben van. Eredmény " + nev(cel) + " számrendszerben: " + eredmenyek[0].ertek;
     } else {
-        eredmeny.innerHTML = "Ez a szám több számrendszerben is lehet, " + nev(cel) + " számrendszerben:<br>"
-            + szoveg + "Ha tudod, melyik, válaszd ki fent!";
+        var egyformak = true;
+        for (var j = 1; j < eredmenyek.length; j++) {
+            if (eredmenyek[j].ertek != eredmenyek[0].ertek) {
+                egyformak = false;
+            }
+        }
+
+        if (egyformak) {
+            eredmeny.textContent = "Eredmény " + nev(cel) + " számrendszerben: " + eredmenyek[0].ertek;
+        } else {
+            var szoveg = "Ez a szám több számrendszerben is lehet, " + nev(cel) + " számrendszerben: ";
+            for (var k = 0; k < eredmenyek.length; k++) {
+                szoveg += "Ha " + nev(eredmenyek[k].alap) + ": " + eredmenyek[k].ertek + " ";
+            }
+            eredmeny.textContent = szoveg + "Ha tudod, melyik, válaszd ki fent!";
+        }
     }
 }
+
+document.getElementById("gomb").addEventListener("click", atvalt);
+
+document.getElementById("szam").addEventListener("keydown", function (e) {
+    if (e.key == "Enter") {
+        atvalt();
+    }
+});
